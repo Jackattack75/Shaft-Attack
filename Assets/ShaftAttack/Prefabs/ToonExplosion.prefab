@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4791513795920490111
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6584735229269793395}
+  - component: {fileID: 966189962708338146}
+  m_Layer: 0
+  m_Name: ToonExplosion
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6584735229269793395
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4791513795920490111}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &966189962708338146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4791513795920490111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13311642b7b6849e7818a8dcf353ce89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.ToonExplosion
+  baseRadius: 3.6
+  blastScale: 1.35
+  duration: 2
+  fireParticles: 30
+  smokeParticles: 45
+  debrisParticles: 26
+  sparkParticles: 34
+  spikeCount: 7
+  debrisBounces: 1
+  smokePuffMin: 0.22
+  smokePuffMax: 0.5
+  smokeDark: {r: 0.05, g: 0.05, b: 0.05, a: 1}
+  smokeBirth: {r: 0.35, g: 0.22, b: 0.16, a: 1}
+  shockwaveRing: 1
+  shockwaveReach: 0.8
+  dustWave: 1
+  dustReach: 1.1
+  addLight: 1
+  matteSmoke: 1
+  smokeSmoothness: 0
+  smokeMetallic: 0
+  fireParticleMaterial: {fileID: 2100000, guid: 22722117491344af0ad4bb34fbd5b4af, type: 2}
+  smokeParticleMaterial: {fileID: 2100000, guid: 2deb194825d5948db96c0541981b3765, type: 2}
+  debrisParticleMaterial: {fileID: 2100000, guid: 6e8a7b94377ef4d648783d08abb5e02a, type: 2}
+  sparkParticleMaterial: {fileID: 2100000, guid: d3a51992eaf9a4a9ba2a15f1a95ff251, type: 2}
+  coreMaterial: {fileID: 2100000, guid: ba8591ba583034454930a2a31163c4f6, type: 2}
+  flameMaterial: {fileID: 2100000, guid: a28c5d8aa29f44f1e87333847f46569c, type: 2}
+  ringMaterial: {fileID: 2100000, guid: 1a31bac8cc3e74cc893822b1812e690e, type: 2}
+  smokeMaterial: {fileID: 2100000, guid: f09f7f025b2c448e99ea41f2dabb4058, type: 2}

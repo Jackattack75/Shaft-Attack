@@ -1,0 +1,2 @@
+07:32:11
+Rock shader: supported True, 0 messages

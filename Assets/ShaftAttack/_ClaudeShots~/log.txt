@@ -1,0 +1,18 @@
+Play mode detected at 09:29:36
+Player camera 'PlayerCamera' at (32.00, 29.25, 14.00), euler (0.0, 0.0, 0.0), fov 79.99992, HDR True, near 0.05, far 300
+Copied URP camera settings (post-processing False)
+Saved 1_player.png from (32.0, 29.3, 14.0)
+Dug a test pit: 152 digs, 55174 samples removed, 305 ms
+Saved 2_pit_from_rim.png from (9.7, 32.0, 0.8)
+Saved 3_wall.png from (10.0, 14.0, 4.0)
+Saved 4_close.png from (8.0, 12.6, 12.0)
+Saved 5_arena.png from (32.0, 9.0, 20.0)
+Saved 6_shadow_side.png from (21.0, 31.0, 21.0)
+Frames while capturing views: 1013 in 4.2 s
+Unity 6000.3.24f1, colour space Linear, quality level PC
+Material 'Rock_Greystone': shader ShaftAttack/Triplanar Rock (supported True), texture Rock_Greystone 1024x1024, tile 6 m, sharpness 6, strata 0
+Material 'Rock_Deeprock': shader ShaftAttack/Triplanar Rock (supported True), texture Rock_Deeprock 1024x1024, tile 6 m, sharpness 6, strata 0
+Material 'Rock_Topsoil': shader ShaftAttack/Triplanar Rock (supported True), texture Rock_Topsoil 1024x1024, tile 6 m, sharpness 6, strata 0
+Material 'Rock_Sandstone': shader ShaftAttack/Triplanar Rock (supported True), texture Rock_Sandstone 1024x1024, tile 6 m, sharpness 6, strata 1
+Chunk renderers: 320 (320 with a mesh), 226768 render vertices
+DONE
