@@ -1,18 +1,27 @@
-Play mode detected at 09:29:36
-Player camera 'PlayerCamera' at (32.00, 29.25, 14.00), euler (0.0, 0.0, 0.0), fov 79.99992, HDR True, near 0.05, far 300
-Copied URP camera settings (post-processing False)
-Saved 1_player.png from (32.0, 29.3, 14.0)
-Dug a test pit: 152 digs, 55174 samples removed, 305 ms
-Saved 2_pit_from_rim.png from (9.7, 32.0, 0.8)
-Saved 3_wall.png from (10.0, 14.0, 4.0)
-Saved 4_close.png from (8.0, 12.6, 12.0)
-Saved 5_arena.png from (32.0, 9.0, 20.0)
-Saved 6_shadow_side.png from (21.0, 31.0, 21.0)
-Frames while capturing views: 1013 in 4.2 s
-Unity 6000.3.24f1, colour space Linear, quality level PC
-Material 'Rock_Greystone': shader ShaftAttack/Triplanar Rock (supported True), texture Rock_Greystone 1024x1024, tile 6 m, sharpness 6, strata 0
-Material 'Rock_Deeprock': shader ShaftAttack/Triplanar Rock (supported True), texture Rock_Deeprock 1024x1024, tile 6 m, sharpness 6, strata 0
-Material 'Rock_Topsoil': shader ShaftAttack/Triplanar Rock (supported True), texture Rock_Topsoil 1024x1024, tile 6 m, sharpness 6, strata 0
-Material 'Rock_Sandstone': shader ShaftAttack/Triplanar Rock (supported True), texture Rock_Sandstone 1024x1024, tile 6 m, sharpness 6, strata 1
-Chunk renderers: 320 (320 with a mesh), 226768 render vertices
+Play mode detected at 10:22:17
+bombSpin 2.5, aim right (1.00, 0.00, 0.00), prefab Bomb2
+Spawned at (32.00, 31.00, 18.00) velocity (0.00, 7.00, 12.00); angular velocity (15.71, 0.00, 0.00), max 50.0, damping 0.00, start up (0.00, 1.00, 0.00), forward (0.00, 0.00, 1.00)
+Pivot (32.000, 31.000, 18.000), centre of mass (32.000, 31.404, 17.998), visual centre (32.000, 31.466, 18.000), visual size (0.796, 0.932, 0.796), scale (3.000, 3.000, 3.000), renderers 1
+  renderer Bomb bounds (32.000, 31.466, 18.000) size (0.796, 0.932, 0.796)
+  collider MeshCollider on Bomb bounds (32.000, 31.466, 18.000) size (0.796, 0.932, 0.796)
+spin_00.png t=2.991 pos (32.00, 31.00, 18.00) up (0.00, 1.00, 0.00) angVel (15.71, 0.00, 0.00)
+spin_01.png t=3.009 pos (32.00, 31.07, 18.05) up (0.00, 0.99, 0.15) angVel (15.71, 0.00, 0.00)
+spin_02.png t=3.034 pos (32.00, 31.29, 18.21) up (0.00, 0.86, 0.51) angVel (15.71, 0.00, 0.00)
+spin_03.png t=3.061 pos (32.00, 31.57, 18.40) up (0.00, 0.58, 0.81) angVel (15.71, 0.00, 0.00)
+spin_04.png t=3.085 pos (32.00, 31.86, 18.63) up (0.00, 0.24, 0.97) angVel (15.71, 0.00, 0.00)
+spin_05.png t=3.110 pos (32.00, 32.16, 18.92) up (0.00, -0.15, 0.99) angVel (15.71, 0.00, 0.00)
+spin_06.png t=3.135 pos (32.00, 32.45, 19.27) up (0.00, -0.52, 0.86) angVel (15.71, 0.00, 0.00)
+spin_07.png t=3.160 pos (32.00, 32.71, 19.69) up (0.00, -0.81, 0.58) angVel (15.71, 0.00, 0.00)
+spin_08.png t=3.185 pos (32.00, 32.90, 20.12) up (0.00, -0.97, 0.24) angVel (15.71, 0.00, 0.00)
+spin_09.png t=3.211 pos (32.00, 33.04, 20.61) up (0.00, -0.98, -0.18) angVel (15.71, 0.00, 0.00)
+spin_10.png t=3.236 pos (32.00, 33.10, 21.05) up (0.00, -0.84, -0.54) angVel (15.71, 0.00, 0.00)
+spin_11.png t=3.263 pos (32.00, 33.10, 21.49) up (0.00, -0.55, -0.84) angVel (15.71, 0.00, 0.00)
+spin_12.png t=3.285 pos (32.00, 33.07, 21.80) up (0.00, -0.24, -0.97) angVel (15.71, 0.00, 0.00)
+spin_13.png t=3.310 pos (32.00, 33.01, 22.11) up (0.00, 0.15, -0.99) angVel (15.71, 0.00, 0.00)
+spin_14.png t=3.335 pos (32.00, 32.96, 22.36) up (0.00, 0.53, -0.85) angVel (15.71, 0.00, 0.00)
+spin_15.png t=3.359 pos (32.00, 32.93, 22.55) up (0.00, 0.80, -0.60) angVel (15.71, 0.00, 0.00)
+spin_16.png t=3.387 pos (32.00, 32.95, 22.73) up (0.00, 0.98, -0.20) angVel (15.71, 0.00, 0.00)
+spin_17.png t=3.410 pos (32.00, 33.01, 22.86) up (0.00, 0.99, 0.15) angVel (15.71, 0.00, 0.00)
+spin_18.png t=3.435 pos (32.00, 33.13, 23.01) up (0.00, 0.86, 0.52) angVel (15.71, 0.00, 0.00)
+spin_19.png t=3.460 pos (32.00, 33.30, 23.19) up (0.00, 0.59, 0.81) angVel (15.71, 0.00, 0.00)
 DONE

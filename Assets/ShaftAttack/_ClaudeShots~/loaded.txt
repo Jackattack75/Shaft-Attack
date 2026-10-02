@@ -1,2 +1,2 @@
-07:32:11
-Rock shader: supported True, 0 messages
+10:12:11
+MinerTools.bombSpin field: True

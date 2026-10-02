@@ -14,7 +14,9 @@
 //
 // Two things stop the 6 m texture looking like wallpaper on big walls and floors:
 //  - Anti-tiling (_AntiTile): the surface is split into irregular patches, each showing its own
-//    copy of the texture - shifted, and sometimes mirrored left-right - cross-faded at soft seams.
+//    copy of the texture - shifted, turned up to _VariantRotation degrees and sometimes mirrored
+//    left-right - cross-faded at soft seams. Turning the copies also stops the painted strokes all
+//    leaning the same way, which tiled into a faint crosshatch on big flat walls.
 //  - Large-scale variation (_MacroStrength): slow light/dark and warm/cool drift from world-space
 //    noise that never repeats. The textures themselves are kept flat at that scale on purpose.
 
@@ -31,6 +33,7 @@ Shader "ShaftAttack/Triplanar Rock"
         _StrataHeight ("Band Height (m)", Float) = 0.55
         _AntiTile ("Break Up Tiling (0 = off)", Range(0, 1)) = 1
         _VariantScale ("Patch Frequency (per tile)", Float) = 0.45
+        _VariantRotation ("Patch Rotation (degrees)", Range(0, 90)) = 35
         _MacroStrength ("Large-Scale Variation", Range(0, 1)) = 0.35
         _MacroScale ("Large-Scale Size (m)", Float) = 11
 
@@ -84,6 +87,7 @@ Shader "ShaftAttack/Triplanar Rock"
                 float _StrataHeight;
                 float _AntiTile;
                 float _VariantScale;
+                float _VariantRotation;
                 float _MacroStrength;
                 float _MacroScale;
                 float _Cutoff;
@@ -146,13 +150,21 @@ Shader "ShaftAttack/Triplanar Rock"
                 return lerp(lerp(x00, x10, f.y), lerp(x01, x11, f.y), f.z);
             }
 
-            // One copy of the texture: shifted by a random offset and, half the time, mirrored
-            // left-right. Only ever left-right, so painted light still comes from above on walls.
+            // One copy of the texture: shifted by a random offset, turned by a random angle up to
+            // _VariantRotation degrees either way and, half the time, mirrored left-right. Never
+            // flipped upside down or turned far, so painted light still comes from above on walls.
             half3 SampleCopy(float2 uv, float2 dx, float2 dy, float id, float salt)
             {
                 float2 off = float2(SA_Hash11(id * 1.618 + salt + 0.37), SA_Hash11(id * 2.414 + salt + 5.11));
                 float2 m = float2(SA_Hash11(id * 3.303 + salt + 9.73) < 0.5 ? -1.0 : 1.0, 1.0);
-                return SAMPLE_TEXTURE2D_GRAD(_BaseMap, sampler_BaseMap, uv * m + off, dx * m, dy * m).rgb;
+                float ang = (SA_Hash11(id * 4.171 + salt + 2.29) * 2.0 - 1.0) * radians(_VariantRotation);
+                float sn, cs;
+                sincos(ang, sn, cs);
+                float2x2 rot = float2x2(cs, -sn, sn, cs);
+                float2 uvR = mul(rot, uv * m) + off;
+                float2 dxR = mul(rot, dx * m);
+                float2 dyR = mul(rot, dy * m);
+                return SAMPLE_TEXTURE2D_GRAD(_BaseMap, sampler_BaseMap, uvR, dxR, dyR).rgb;
             }
 
             // Anti-tiling (after Inigo Quilez, "texture repetition", technique 3). A slow noise

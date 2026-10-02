@@ -38,6 +38,10 @@ namespace ShaftAttack
         [Range(0f, 1f)]
         [Tooltip("How much of your own movement the bomb inherits when thrown.")]
         public float inheritVelocity = 0.5f;
+        [Range(0f, 10f)]
+        [Tooltip("Forward spin on a thrown bomb, in full turns per second: it rolls away from you " +
+                 "like a bowled ball. 0 = no spin (it starts at a random angle instead).")]
+        public float bombSpin = 2.5f;
         [Tooltip("Crater radius. 3.6 = a 7.2 m wide room from one bomb.")]
         public float bombDigRadius = 3.6f;
 

@@ -32,10 +32,17 @@ namespace ShaftAttack
         {
             GameObject go;
             bool custom = owner != null && owner.bombPrefab != null;
+            float spin = owner != null ? owner.bombSpin : 0f;
+            Vector3 spinAxis = SpinAxis(owner, velocity);
 
             if (custom)
             {
-                go = Instantiate(owner.bombPrefab, position, Random.rotation);
+                // A spinning bomb starts upright and facing the throw, so the roll always reads the
+                // same way: the top goes over and away from you. No spin = random angle, as before.
+                Quaternion start = spin > 0f
+                    ? Quaternion.LookRotation(Vector3.Cross(spinAxis, Vector3.up), Vector3.up) * owner.bombPrefab.transform.rotation
+                    : Random.rotation;
+                go = Instantiate(owner.bombPrefab, position, start);
             }
             else
             {
@@ -65,6 +72,16 @@ namespace ShaftAttack
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             rb.linearVelocity = velocity;
 
+            // Forward roll: spin about the thrower's right-hand side, which carries the top of the
+            // bomb away from them. No angular damping, so the spin holds all the way to impact.
+            if (spin > 0f)
+            {
+                float radiansPerSecond = spin * 2f * Mathf.PI;
+                rb.maxAngularVelocity = Mathf.Max(rb.maxAngularVelocity, radiansPerSecond * 1.5f);
+                rb.angularDamping = 0f;
+                rb.angularVelocity = spinAxis * radiansPerSecond;
+            }
+
             if (ignore != null)
             {
                 Collider[] mine = go.GetComponentsInChildren<Collider>();
@@ -80,6 +97,24 @@ namespace ShaftAttack
             bomb.lastPosition = position;
             bomb.fuse = bomb.maxFuse;
             return bomb;
+        }
+
+        /// <summary>
+        /// The axis a forward roll turns about: the thrower's right-hand side, kept level. A positive
+        /// spin about it carries the top of the bomb forward, away from them.
+        /// </summary>
+        private static Vector3 SpinAxis(MinerTools owner, Vector3 velocity)
+        {
+            if (owner != null && owner.aim != null)
+            {
+                Vector3 right = owner.aim.right;
+                right.y = 0f;
+                if (right.sqrMagnitude > 0.0001f) return right.normalized;
+            }
+
+            Vector3 flat = new Vector3(velocity.x, 0f, velocity.z);
+            if (flat.sqrMagnitude > 0.0001f) return Vector3.Cross(Vector3.up, flat.normalized);
+            return Vector3.right;
         }
 
         /// <summary>
