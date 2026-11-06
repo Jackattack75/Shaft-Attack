@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4199487342558030505}
   - component: {fileID: 5405403226048643244}
   - component: {fileID: 5925581726710735651}
+  - component: {fileID: 2280221490358460226}
   m_Layer: 0
   m_Name: Digby
   m_TagString: Untagged
@@ -62,6 +63,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.SnapToGround
   searchHeight: 40
   maxWait: 8
+--- !u!114 &2280221490358460226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8069311956253681081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0eef717850f644d06a932e41e01495b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.DigbyAnimDriver
+  walkSpeed: 0.5
+  runSpeed: 1.82
+  maxRunRate: 1.8
+  jumpDetectSpeed: 2.5
+  airGrace: 0.12
+  faceMovement: 0
+  turnSpeed: 540
 --- !u!1001 &4312429502520391019
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -110,17 +130,37 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -7511558181221131132, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+    - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+      propertyPath: m_AABB.m_Extent.x
+      value: 1.38477
+      objectReference: {fileID: 0}
+    - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+      propertyPath: m_AABB.m_Extent.y
+      value: 1.1291363
+      objectReference: {fileID: 0}
+    - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+      propertyPath: m_AABB.m_Extent.z
+      value: 1.3303196
+      objectReference: {fileID: 0}
+    - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: a8ffde8139f8d49bdaa75804ed58817d, type: 2}
-    - target: {fileID: -7511558181221131132, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+    - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 5daef75f89f14430ebd6b1296ba2c1e4, type: 2}
     - target: {fileID: 919132149155446097, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_Name
       value: Model
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: c7f53ff28ae2e4af18f1b57f9f67394e, type: 2}
+    - target: {fileID: 5866666021909216657, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+      propertyPath: m_CullingMode
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
