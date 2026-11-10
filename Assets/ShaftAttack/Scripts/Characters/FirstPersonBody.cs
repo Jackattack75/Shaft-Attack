@@ -10,13 +10,16 @@ namespace ShaftAttack
     ///  - Head hidden in your own view: a copy of the skinned mesh draws the body, with everything that belongs
     ///    only to the head (face, helmet, goggles) folded into a point. Bits shared with the neck stay on the neck.
     ///  - Whole body in your shadow: the original mesh only casts shadows, head and all.
-    ///  - Body kept under the camera: every frame the body slides sideways so the point between his eyes sits
-    ///    right below the camera (a little behind it, so the neck never shows when you look straight down).
+    ///  - Body kept under the camera: every frame the body slides sideways so his head sits right below the
+    ///    camera (his eyes a little behind it, so the neck never shows when you look straight down). It follows
+    ///    the top of his neck, not his eyes, so the body stays put when he looks around in the idle.
     ///    In a slide the camera drops below his eyes, so it sits in front of his chest instead (SlideCam bone),
     ///    following the animator's blend into and out of the slide. Whenever the camera is lower than his eyes
     ///    (the slide drop, a slam or landing dip) the body also steps back, so the camera never ends up inside him.
     ///    The feet stay on the ground: only the horizontal position changes. Runs after CameraFeel, so it follows
     ///    the camera's dips and shakes too.
+    ///  - Third person (ThirdPersonView, a test view): the whole body shows, head included, and it stands in
+    ///    the middle of the player, where other players would see it.
     /// </summary>
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(100)]
@@ -27,6 +30,9 @@ namespace ShaftAttack
 
         [Tooltip("The camera sits this far in front of his eyes (metres), so his neck never shows when you look straight down.")]
         public float eyeForwardOffset = 0.15f;
+
+        [Tooltip("How far his eyes are in front of the top of his neck when he stands at rest (metres). Set by the Digby import.")]
+        public float restEyeAhead = 0.2f;
 
         [Tooltip("When the camera is lower than his eyes (dropping into a slide before his body has), the camera moves up to this much further in front of him so it never ends up inside his chest.")]
         public float lowCameraForward = 0.35f;
@@ -40,10 +46,12 @@ namespace ShaftAttack
         private PlayerMotor motor;
         private Transform view;          // the camera itself (CameraFeel dips and shakes it inside the pivot)
         private Transform eye;
+        private Transform headJoint;
         private Transform slideCam;
         private SkinnedMeshRenderer source;
         private SkinnedMeshRenderer firstPerson;
         private Animator animator;
+        private bool thirdPerson;
         private static readonly int SlideHash = Animator.StringToHash("Slide");
 
         private void Start()
@@ -56,8 +64,10 @@ namespace ShaftAttack
             if (source == null) return;
             animator = GetComponentInChildren<Animator>();
             eye = Find(transform, "Eye");
+            headJoint = Find(transform, "Head");
             slideCam = Find(transform, "SlideCam");
             if (hideHead) BuildFirstPersonMesh();
+            ApplyView();
             MinerTeamColour tc = GetComponent<MinerTeamColour>();
             if (tc != null) tc.Apply();
         }
@@ -122,8 +132,33 @@ namespace ShaftAttack
             firstPerson.quality = source.quality;
             firstPerson.shadowCastingMode = ShadowCastingMode.Off;
             firstPerson.receiveShadows = true;
-            source.shadowCastingMode = fullBodyShadow ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.Off;
-            if (!fullBodyShadow) source.enabled = false;
+        }
+
+        /// <summary>Third-person test view: true shows the whole body (head and all) standing in the middle of the
+        /// player, the way other players see it. False goes back to the first-person body.</summary>
+        public void SetThirdPerson(bool on)
+        {
+            thirdPerson = on;
+            ApplyView();
+        }
+
+        private void ApplyView()
+        {
+            if (source == null) return;
+            if (firstPerson != null)
+            {
+                firstPerson.enabled = !thirdPerson;
+                source.enabled = thirdPerson || fullBodyShadow;
+                source.shadowCastingMode = thirdPerson ? ShadowCastingMode.On
+                                         : fullBodyShadow ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.Off;
+            }
+            if (thirdPerson) Centre();
+        }
+
+        private void Centre()
+        {
+            Vector3 p = transform.localPosition;
+            transform.localPosition = new Vector3(0f, p.y, 0f);
         }
 
         /// <summary>Two slots pointing at the same bone (head moved onto the neck) become one.</summary>
@@ -160,6 +195,7 @@ namespace ShaftAttack
 
         private void LateUpdate()
         {
+            if (thirdPerson) { Centre(); return; }
             if (view == null || eye == null) return;
             Vector3 camPos = view.position;
             Vector3 fwd = transform.forward;
@@ -167,7 +203,9 @@ namespace ShaftAttack
             fwd = fwd.sqrMagnitude > 0.0001f ? fwd.normalized : Vector3.forward;
             // camera below his eyes (it drops into a slide a moment before his body does, slam dip): keep it in front of him
             float low = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.05f, 0.35f, eye.position.y - camPos.y));
-            Vector3 spot = eye.position + fwd * (eyeForwardOffset + lowCameraForward * low);
+            // where the camera goes on his body: in front of his face, measured from the top of his neck
+            Vector3 face = headJoint != null ? headJoint.position + fwd * restEyeAhead : eye.position;
+            Vector3 spot = face + fwd * (eyeForwardOffset + lowCameraForward * low);
             float slide = SlidePose();
             if (slideCam != null && slide > 0f)
                 spot = Vector3.Lerp(spot, slideCam.position, Mathf.SmoothStep(0f, 1f, slide));

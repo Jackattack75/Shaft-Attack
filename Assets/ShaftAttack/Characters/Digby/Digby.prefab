@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5405403226048643244}
   - component: {fileID: 5925581726710735651}
   - component: {fileID: 2280221490358460226}
+  - component: {fileID: 5839980087947016484}
   m_Layer: 0
   m_Name: Digby
   m_TagString: Untagged
@@ -86,6 +87,27 @@ MonoBehaviour:
   legsFollowMovement: 0
   maxLegYaw: 55
   legTurnSpeed: 420
+  aimLean: 0.6
+  aimInSpeed: 30
+  aimOutSpeed: 6
+  stowAt: 0.78
+  swingCommit: 0.15
+--- !u!114 &5839980087947016484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8069311956253681081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ad881cd2cbab4ea7bca671f9919cd3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.DigbyPickaxe
+  pickaxe: {fileID: 0}
+  handBone: {fileID: 0}
+  backBone: {fileID: 0}
+  startInHand: 0
 --- !u!1001 &4312429502520391019
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -136,7 +158,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_AABB.m_Extent.x
-      value: 1.4157901
+      value: 1.4157902
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_AABB.m_Extent.y
@@ -166,6 +188,14 @@ PrefabInstance:
       propertyPath: m_CullingMode
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6757830614148849004, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 265d76f90f8734872a15f8588a80375c, type: 2}
+    - target: {fileID: 6757830614148849004, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 00b45130291ee4cc784345785c8869f6, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

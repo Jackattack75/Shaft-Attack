@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5558524954332915732}
   - component: {fileID: 4533419979699884228}
   - component: {fileID: 7958708111144632}
+  - component: {fileID: 153705331576337}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -35,7 +36,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4443122097099076922}
-  - {fileID: 175776295509017082}
+  - {fileID: 1896839711865100561}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &7214275846587974995
@@ -179,6 +180,31 @@ MonoBehaviour:
   placeholderBombScale: 0.35
   bombMaterial: {fileID: 2100000, guid: f2c2b09e4fb9f4c6c85998657dabbf50, type: 2}
   explosionMaterial: {fileID: 2100000, guid: 4621df551847c475e859b9120e41faea, type: 2}
+--- !u!114 &153705331576337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653073586639539983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9024abab45c24cb99a27d5599bc69a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.ThirdPersonView
+  view: 0
+  allowToggle: 1
+  distance: 4.2
+  minDistance: 1.6
+  maxDistance: 10
+  zoomStep: 0.6
+  lookAtHeight: 0.72
+  tilt: 12
+  pitchFollow: 0.6
+  fieldOfView: 60
+  avoidWalls: 1
+  cameraRadius: 0.25
+  showHint: 1
 --- !u!1 &5437482841896375404
 GameObject:
   m_ObjectHideFlags: 0
@@ -511,7 +537,7 @@ MonoBehaviour:
   maxShakeOffset: 0.12
   traumaDecay: 1.8
   shakeRange: 6
---- !u!1 &7586920099520023339
+--- !u!1 &6095289187044218936
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -519,10 +545,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 175776295509017082}
-  - component: {fileID: 4463209997296412062}
-  - component: {fileID: 8069921955265225559}
-  - component: {fileID: 3310742040903033261}
+  - component: {fileID: 1896839711865100561}
+  - component: {fileID: 7453412896772005447}
+  - component: {fileID: 2403675168847339199}
+  - component: {fileID: 3159517994559169786}
+  - component: {fileID: 3607253540165033571}
   m_Layer: 0
   m_Name: DigbyBody
   m_TagString: Untagged
@@ -530,29 +557,29 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &175776295509017082
+--- !u!4 &1896839711865100561
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7586920099520023339}
+  m_GameObject: {fileID: 6095289187044218936}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.125, y: 1.125, z: 1.125}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1162798690212457294}
+  - {fileID: 3137173687128888791}
   m_Father: {fileID: 2691056347192081751}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4463209997296412062
+--- !u!114 &7453412896772005447
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7586920099520023339}
+  m_GameObject: {fileID: 6095289187044218936}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 939f755209bac453dbc22e96c2140384, type: 3}
@@ -560,13 +587,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.MinerTeamColour
   teamColour: {r: 0.965, g: 0.675, b: 0.071, a: 1}
   teamSlot: 1
---- !u!114 &8069921955265225559
+--- !u!114 &2403675168847339199
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7586920099520023339}
+  m_GameObject: {fileID: 6095289187044218936}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0eef717850f644d06a932e41e01495b5, type: 3}
@@ -583,13 +610,32 @@ MonoBehaviour:
   legsFollowMovement: 1
   maxLegYaw: 55
   legTurnSpeed: 420
---- !u!114 &3310742040903033261
+  aimLean: 0.6
+  aimBlendSpeed: 9
+  stowAt: 0.78
+--- !u!114 &3159517994559169786
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7586920099520023339}
+  m_GameObject: {fileID: 6095289187044218936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ad881cd2cbab4ea7bca671f9919cd3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.DigbyPickaxe
+  pickaxe: {fileID: 0}
+  handBone: {fileID: 0}
+  backBone: {fileID: 0}
+  startInHand: 0
+--- !u!114 &3607253540165033571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6095289187044218936}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 19cbafe0ae66b4a858e4fd3c56b34ec7, type: 3}
@@ -597,16 +643,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.FirstPersonBody
   cameraPivot: {fileID: 0}
   eyeForwardOffset: 0.15
+  restEyeAhead: 0.20983636
   lowCameraForward: 0.35
   hideHead: 1
   fullBodyShadow: 1
---- !u!1001 &1705085532525710501
+--- !u!1001 &3171593678900195900
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 175776295509017082}
+    m_TransformParent: {fileID: 1896839711865100561}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -650,7 +697,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_AABB.m_Extent.x
-      value: 1.4157901
+      value: 1.4157902
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_AABB.m_Extent.y
@@ -680,13 +727,21 @@ PrefabInstance:
       propertyPath: m_CullingMode
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6757830614148849004, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 265d76f90f8734872a15f8588a80375c, type: 2}
+    - target: {fileID: 6757830614148849004, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 00b45130291ee4cc784345785c8869f6, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
---- !u!4 &1162798690212457294 stripped
+--- !u!4 &3137173687128888791 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
-  m_PrefabInstance: {fileID: 1705085532525710501}
+  m_PrefabInstance: {fileID: 3171593678900195900}
   m_PrefabAsset: {fileID: 0}

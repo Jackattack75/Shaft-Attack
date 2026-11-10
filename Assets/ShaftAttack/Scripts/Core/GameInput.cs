@@ -13,6 +13,7 @@ namespace ShaftAttack
     ///
     /// Bindings: Shift dash, Ctrl slide (ground-slam in the air), Space jump,
     /// left mouse pickaxe, right mouse bomb. No sprint key - you are always running.
+    /// V switches first person / third person (test view), the mouse wheel zooms it.
     /// </summary>
     public static class GameInput
     {
@@ -134,6 +135,36 @@ namespace ShaftAttack
                        (kb != null && kb.qKey.wasPressedThisFrame);
 #else
                 return Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q);
+#endif
+            }
+        }
+
+        /// <summary>V tapped. Test tool: switches between first person and the third-person views.</summary>
+        public static bool ViewTogglePressedThisFrame
+        {
+            get
+            {
+#if ENABLE_INPUT_SYSTEM
+                Keyboard kb = Keyboard.current;
+                return kb != null && kb.vKey.wasPressedThisFrame;
+#else
+                return Input.GetKeyDown(KeyCode.V);
+#endif
+            }
+        }
+
+        /// <summary>Mouse wheel this frame, about 1 per notch: + = wheel pushed away from you.</summary>
+        public static float Scroll
+        {
+            get
+            {
+#if ENABLE_INPUT_SYSTEM
+                Mouse m = Mouse.current;
+                if (m == null) return 0f;
+                float y = m.scroll.ReadValue().y;
+                return Mathf.Abs(y) >= 60f ? y / 120f : y;      // Windows reports 120 a notch, macOS about 1
+#else
+                return Input.mouseScrollDelta.y;
 #endif
             }
         }

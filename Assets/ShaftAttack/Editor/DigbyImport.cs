@@ -47,8 +47,10 @@ namespace ShaftAttack.EditorTools
 
     /// <summary>
     /// Import settings and setup for Digby, the default miner (Assets/ShaftAttack/Characters/Digby).
-    /// Digby.fbx is rigged (Generic) with the clips Idle, Walk, Run, Jump, JumpStart, JumpAir, JumpLand and the player's
-    /// Sprint (10 m/s), Slide, Dash, Slam, SlamLand; bones Eye and SlideCam mark where the first-person camera goes.
+    /// Digby.fbx is rigged (Generic) with the clips Idle, Walk, Run, Jump, JumpStart, JumpRise / JumpAir / JumpFall,
+    /// JumpLand, WallJumpL / WallJumpR and the player's Sprint (10 m/s), Slide, Dash, Slam, SlamLand, PickHit, PickMiss,
+    /// Throw; bones Eye and SlideCam mark where the first-person camera goes; his pickaxe (PickaxeMesh) rides on the
+    /// Pickaxe bone in his right fist and is stowed on the PickaxeBack bone by DigbyPickaxe.
     /// Builds the two URP Lit materials (Digby_Base, and Digby_Team for the helmet), Digby.controller
     /// (only if it doesn't exist yet, so hand edits survive) and Digby.prefab whenever the files are
     /// imported. "Shaft Attack/Rebuild Digby" redoes it by hand; "Rebuild Digby Animator" also remakes
@@ -58,6 +60,9 @@ namespace ShaftAttack.EditorTools
     {
         public const string Dir = "Assets/ShaftAttack/Characters/Digby";
         public const string ControllerPath = Dir + "/Digby.controller";
+        /// <summary>URP Lit with near lights capped, written by DigbyLitShader (his own headlamp no longer burns his
+        /// arms and pickaxe out to white).</summary>
+        public const string LitShaderPath = Dir + "/DigbyLit.shader";
         public static readonly Color DefaultTeam = new Color(0.965f, 0.675f, 0.071f);   // yellow
         private const float EmissionStrength = 6f;                                       // baked as strength / 6
         public const float WalkSpeed = 0.499f;     // ground speed of the clips, m/s (Blender export)
@@ -65,7 +70,12 @@ namespace ShaftAttack.EditorTools
         public const float SprintSpeed = 10f;     // v4 (11-09): the player's run speed (PlayerMotor.runSpeed)
         public const float PlayerBodyScale = 1.125f;   // his eyes (1.44 m) at the player's camera (1.62 m)
         public const string PlayerPrefabPath = "Assets/ShaftAttack/Prefabs/Player.prefab";
-        private static readonly string[] Loops = { "Idle", "Walk", "Run", "JumpAir", "Sprint", "Slide", "Slam" };
+        private static readonly string[] Loops = { "Idle", "Walk", "Run", "JumpAir", "JumpRise", "JumpFall", "Sprint", "Slide", "Slam" };
+        // bones each arm layer of the animator may move (v5): the pickaxe swing and the bomb throw play over the legs
+        private static readonly string[] RightArmBones = { "Chest", "RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand",
+                                                           "Half_Shoulder.R", "Half_Elbow.R", "Pickaxe" };
+        private static readonly string[] LeftArmBones = { "Chest", "LeftShoulder", "LeftUpperArm", "LeftLowerArm", "LeftHand",
+                                                          "Half_Shoulder.L", "Half_Elbow.L" };
 
         private bool Mine
         {
@@ -237,6 +247,7 @@ namespace ShaftAttack.EditorTools
         /// camera) holding the rigged model with Digby.controller, plus DigbyAnimDriver (fed by PlayerMotor, legs
         /// turn toward strafes, plays backwards when backpedalling), FirstPersonBody (head hidden in your own view,
         /// whole body in your shadow, body kept under the camera) and MinerTeamColour. Replaces an older DigbyBody.
+        /// Also puts ThirdPersonView on the Player (V switches to a third-person test view).
         /// </summary>
         public static string BuildPlayerBody()
         {
@@ -275,13 +286,21 @@ namespace ShaftAttack.EditorTools
                 animator.applyRootMotion = false;
                 animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
+                bool hasPick = DressPickaxe(inst);
                 bodyGo.AddComponent<MinerTeamColour>();
                 DigbyAnimDriver driver = bodyGo.AddComponent<DigbyAnimDriver>();
                 driver.legsFollowMovement = true;
-                bodyGo.AddComponent<FirstPersonBody>();
+                if (hasPick) bodyGo.AddComponent<DigbyPickaxe>();
+                FirstPersonBody fp = bodyGo.AddComponent<FirstPersonBody>();
+                Transform eyeBone = FindDeep(inst.transform, "Eye");
+                Transform headBone = FindDeep(inst.transform, "Head");
+                if (eyeBone != null && headBone != null)        // rest pose here: how far his eyes are in front of his neck
+                    fp.restEyeAhead = Vector3.Dot(eyeBone.position - headBone.position, bodyGo.transform.forward);
+                if (root.GetComponent<ThirdPersonView>() == null) root.AddComponent<ThirdPersonView>();   // V: test view
                 PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);
                 return "DigbyBody on Player.prefab: scale " + PlayerBodyScale + ", model yaw " + yaw + ", " +
-                       skin.bones.Length + " bones, controller " + controller.name;
+                       skin.bones.Length + " bones, controller " + controller.name + ", eyes " + fp.restEyeAhead.ToString("0.000") +
+                       " m ahead of the neck" + (hasPick ? ", pickaxe" : ", NO pickaxe");
             }
             finally
             {
@@ -304,6 +323,7 @@ namespace ShaftAttack.EditorTools
 
             Material body = MakeMaterial("Digby_Base", Color.white, baseMap, normal, metal, glow);
             Material team = MakeMaterial("Digby_Team", DefaultTeam, baseMap, normal, metal, glow);
+            MakePickaxeMaterials();
             Dictionary<string, AnimationClip> clips = LoadClips();
             AnimatorController controller = MakeController(clips, rebuildAnimator);
 
@@ -335,9 +355,11 @@ namespace ShaftAttack.EditorTools
                 animator.applyRootMotion = false;
                 animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             }
+            bool hasPick = DressPickaxe(inst);
             root.AddComponent<MinerTeamColour>();
             root.AddComponent<SnapToGround>();
             if (controller != null) root.AddComponent<DigbyAnimDriver>();
+            if (hasPick) root.AddComponent<DigbyPickaxe>();
             Mesh mesh = skin != null ? skin.sharedMesh : null;
             if (mesh == null)
             {
@@ -347,12 +369,79 @@ namespace ShaftAttack.EditorTools
             string report = "built: " + (mesh != null ? mesh.triangles.Length / 3 + " triangles, " + mesh.subMeshCount +
                             " material slots, " : "no mesh?, ") + (skin != null ? skin.bones.Length + " bones, " : "not skinned, ") +
                             clips.Count + " clips (" + string.Join(" ", new List<string>(clips.Keys).ToArray()) + "), model yaw " + yaw +
-                            ", controller " + (controller != null ? AssetDatabase.GetAssetPath(controller) : "none");
+                            ", controller " + (controller != null ? AssetDatabase.GetAssetPath(controller) : "none") +
+                            (controller != null ? " (" + controller.layers.Length + " layers, " + controller.parameters.Length + " parameters)" : "") +
+                            (hasPick ? ", pickaxe" : ", NO pickaxe");
             PrefabUtility.SaveAsPrefabAsset(root, Dir + "/Digby.prefab");
             Object.DestroyImmediate(root);
             AssetDatabase.SaveAssets();
             Debug.Log("[Digby] " + report);
             return report;
+        }
+
+        /// <summary>Gives the pickaxe that came in with the model (PickaxeMesh, on the Pickaxe bone) its materials.</summary>
+        private static bool DressPickaxe(GameObject modelInstance)
+        {
+            Transform pick = FindDeep(modelInstance.transform, "PickaxeMesh");
+            MeshRenderer mr = pick != null ? pick.GetComponent<MeshRenderer>() : null;
+            if (mr == null) return false;
+            Material pb = AssetDatabase.LoadAssetAtPath<Material>(Dir + "/Pickaxe_Base.mat");
+            Material pt = AssetDatabase.LoadAssetAtPath<Material>(Dir + "/Pickaxe_Team.mat");
+            if (pb == null || pt == null) return false;
+            mr.sharedMaterials = new[] { pb, pt };
+            return true;
+        }
+
+        /// <summary>Pickaxe_Base (wood, leather, iron) and Pickaxe_Team (the cloth wrap, tinted with the team colour):
+        /// Digby's Lit shader, base colour + metallic/smoothness map, no normal map and no glow.</summary>
+        private static void MakePickaxeMaterials()
+        {
+            Texture2D baseMap = Tex("Pickaxe_BaseColor");
+            Texture2D metal = Tex("Pickaxe_MetallicSmoothness");
+            if (baseMap == null) return;
+            foreach (string name in new[] { "Pickaxe_Base", "Pickaxe_Team" })
+            {
+                string path = Dir + "/" + name + ".mat";
+                Shader lit = DigbyLitShader.Get(LitShaderPath);
+                Material m = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (m == null)
+                {
+                    m = new Material(lit);
+                    AssetDatabase.CreateAsset(m, path);
+                }
+                else
+                {
+                    m.shader = lit;
+                }
+                m.SetTexture("_BaseMap", baseMap);
+                m.SetColor("_BaseColor", name == "Pickaxe_Team" ? DefaultTeam : Color.white);
+                if (metal != null)
+                {
+                    m.SetTexture("_MetallicGlossMap", metal);
+                    m.SetFloat("_Smoothness", 1f);
+                    m.SetFloat("_SmoothnessTextureChannel", 0f);
+                    m.EnableKeyword("_METALLICSPECGLOSSMAP");
+                }
+                m.DisableKeyword("_NORMALMAP");
+                m.DisableKeyword("_EMISSION");
+                m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+                EditorUtility.SetDirty(m);
+            }
+        }
+
+        /// <summary>A mask for one animator layer: only the named bones of the model are driven by it.</summary>
+        private static AvatarMask MakeMask(string name, GameObject model, string[] bones)
+        {
+            AvatarMask mask = new AvatarMask();
+            mask.name = name;
+            Transform[] all = model.GetComponentsInChildren<Transform>(true);
+            mask.transformCount = all.Length;
+            for (int i = 0; i < all.Length; i++)
+            {
+                mask.SetTransformPath(i, AnimationUtility.CalculateTransformPath(all[i], model.transform));
+                mask.SetTransformActive(i, System.Array.IndexOf(bones, all[i].name) >= 0);
+            }
+            return mask;
         }
 
         private static Transform FindDeep(Transform t, string name)
@@ -379,10 +468,14 @@ namespace ShaftAttack.EditorTools
 
         /// <summary>
         /// Digby.controller. Parameters: Speed (m/s), MoveRate (walk/run playback speed), Grounded, Jump (trigger);
-        /// with the player's clips also Sliding, Slamming (bools), Dash, SlamLand (triggers).
-        /// Locomotion = 1D blend tree Idle / Walk / Run / Sprint by Speed. Jump: JumpStart -> JumpAir (loop) -> JumpLand.
-        /// Slide (while Sliding), Dash (trigger, then back to Locomotion or JumpAir), Slam (while Slamming) -> SlamLand.
+        /// with the player's clips also Sliding, Slamming (bools), Dash, SlamLand (triggers), VSpeed (m/s up),
+        /// WallJump (trigger), WallSide (-1 = the wall is on his left, +1 = on his right).
+        /// Base layer: Locomotion = 1D blend tree Idle / Walk / Run / Sprint by Speed. Jump: JumpStart -> JumpAir ->
+        /// JumpLand, where JumpAir is a blend tree by VSpeed (JumpFall / JumpAir / JumpRise). WallJump = blend of
+        /// WallJumpL / WallJumpR by WallSide. Slide (while Sliding), Dash (trigger), Slam (while Slamming) -> SlamLand.
         /// "Jump" is the full show-off jump with the wind-up (played from code, e.g. DigbyShowcase).
+        /// Layers RightArm (PickHit, PickMiss) and LeftArm (Throw) only move that arm and the chest: DigbyAnimDriver
+        /// starts those states from code when the player digs or throws, so they play over running, sliding, jumping.
         /// </summary>
         private static AnimatorController MakeController(Dictionary<string, AnimationClip> clips, bool rebuild)
         {
@@ -402,12 +495,21 @@ namespace ShaftAttack.EditorTools
             ac.AddParameter("Jump", AnimatorControllerParameterType.Trigger);
             bool moves = clips.ContainsKey("Sprint") && clips.ContainsKey("Slide") && clips.ContainsKey("Dash") &&
                          clips.ContainsKey("Slam") && clips.ContainsKey("SlamLand");
+            bool airBlend = clips.ContainsKey("JumpRise") && clips.ContainsKey("JumpFall");
+            bool wall = clips.ContainsKey("WallJumpL") && clips.ContainsKey("WallJumpR");
+            bool arms = clips.ContainsKey("PickHit") && clips.ContainsKey("PickMiss") && clips.ContainsKey("Throw");
             if (moves)
             {
                 ac.AddParameter("Sliding", AnimatorControllerParameterType.Bool);
                 ac.AddParameter("Slamming", AnimatorControllerParameterType.Bool);
                 ac.AddParameter("Dash", AnimatorControllerParameterType.Trigger);
                 ac.AddParameter("SlamLand", AnimatorControllerParameterType.Trigger);
+            }
+            if (airBlend) ac.AddParameter("VSpeed", AnimatorControllerParameterType.Float);
+            if (wall)
+            {
+                ac.AddParameter("WallJump", AnimatorControllerParameterType.Trigger);
+                ac.AddParameter("WallSide", AnimatorControllerParameterType.Float);
             }
             AnimatorControllerParameter[] ps = ac.parameters;
             foreach (AnimatorControllerParameter p in ps)
@@ -433,8 +535,24 @@ namespace ShaftAttack.EditorTools
 
             AnimatorState start = sm.AddState("JumpStart");
             start.motion = clips["JumpStart"];
-            AnimatorState air = sm.AddState("JumpAir");
-            air.motion = clips["JumpAir"];
+            AnimatorState air;
+            if (airBlend)
+            {
+                // going up -> the top -> coming down, by how fast he is moving up (m/s)
+                BlendTree airTree;
+                air = ac.CreateBlendTreeInController("JumpAir", out airTree, 0);
+                airTree.blendType = BlendTreeType.Simple1D;
+                airTree.blendParameter = "VSpeed";
+                airTree.useAutomaticThresholds = false;
+                airTree.AddChild(clips["JumpFall"], -8f);
+                airTree.AddChild(clips["JumpAir"], 0f);
+                airTree.AddChild(clips["JumpRise"], 7f);
+            }
+            else
+            {
+                air = sm.AddState("JumpAir");
+                air.motion = clips["JumpAir"];
+            }
             AnimatorState land = sm.AddState("JumpLand");
             land.motion = clips["JumpLand"];
             AnimatorState show = sm.AddState("Jump");
@@ -467,6 +585,28 @@ namespace ShaftAttack.EditorTools
 
             t = show.AddTransition(loco);
             Timing(t, true, 0.97f, 0.1f);
+
+            if (wall)
+            {
+                // kick off a wall: left / right version blended by which side the wall is on
+                BlendTree wallTree;
+                AnimatorState wj = ac.CreateBlendTreeInController("WallJump", out wallTree, 0);
+                wallTree.blendType = BlendTreeType.Simple1D;
+                wallTree.blendParameter = "WallSide";
+                wallTree.useAutomaticThresholds = false;
+                wallTree.AddChild(clips["WallJumpL"], -1f);
+                wallTree.AddChild(clips["WallJumpR"], 1f);
+                t = sm.AddAnyStateTransition(wj);
+                t.AddCondition(AnimatorConditionMode.If, 0f, "WallJump");
+                Timing(t, false, 0f, 0.04f);
+                t.canTransitionToSelf = true;
+                t = wj.AddTransition(air);
+                t.AddCondition(AnimatorConditionMode.IfNot, 0f, "Grounded");
+                Timing(t, true, 0.75f, 0.12f);
+                t = wj.AddTransition(land);
+                t.AddCondition(AnimatorConditionMode.If, 0f, "Grounded");
+                Timing(t, true, 0.5f, 0.05f);
+            }
 
             if (moves)
             {
@@ -528,9 +668,57 @@ namespace ShaftAttack.EditorTools
                 Timing(t, true, 0.9f, 0.2f);
             }
 
+            // Let the AnyState moves (dash, slam, slide, wall jump, jump) cut into a blend that is already under
+            // way. By default a transition in progress can't be interrupted, so e.g. a slam started while he was
+            // still blending out of a landing never showed its dive.
+            foreach (ChildAnimatorState cs in sm.states)
+                foreach (AnimatorStateTransition tr in cs.state.transitions)
+                    tr.interruptionSource = TransitionInterruptionSource.Destination;
+
+            if (arms)
+            {
+                GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(Dir + "/Digby.fbx");
+                AnimatorStateMachine right = AddArmLayer(ac, "RightArm", MakeMask("Digby_RightArm", model, RightArmBones));
+                AnimatorState rest = right.defaultState;
+                foreach (string clip in new[] { "PickHit", "PickMiss" })
+                {
+                    AnimatorState st = right.AddState(clip);
+                    st.motion = clips[clip];
+                    st.writeDefaultValues = false;
+                    t = st.AddTransition(rest);                    // done digging: let the arm go back to what it was doing
+                    Timing(t, true, 0.9f, 0.12f);
+                }
+                AnimatorStateMachine left = AddArmLayer(ac, "LeftArm", MakeMask("Digby_LeftArm", model, LeftArmBones));
+                AnimatorState thr = left.AddState("Throw");
+                thr.motion = clips["Throw"];
+                thr.writeDefaultValues = false;
+                t = thr.AddTransition(left.defaultState);
+                Timing(t, true, 0.8f, 0.15f);
+            }
+
             EditorUtility.SetDirty(ac);
             AssetDatabase.SaveAssets();
             return ac;
+        }
+
+        /// <summary>An extra animator layer that only moves the bones in `mask`. Its default state "Empty" plays
+        /// nothing, so the base layer shows until code starts one of its other states.</summary>
+        private static AnimatorStateMachine AddArmLayer(AnimatorController ac, string name, AvatarMask mask)
+        {
+            mask.hideFlags = HideFlags.HideInHierarchy;
+            AssetDatabase.AddObjectToAsset(mask, ac);
+            ac.AddLayer(name);
+            AnimatorControllerLayer[] layers = ac.layers;
+            int i = layers.Length - 1;
+            layers[i].avatarMask = mask;
+            layers[i].defaultWeight = 1f;
+            layers[i].blendingMode = AnimatorLayerBlendingMode.Override;
+            ac.layers = layers;
+            AnimatorStateMachine sm = ac.layers[i].stateMachine;
+            AnimatorState empty = sm.AddState("Empty");
+            empty.writeDefaultValues = false;
+            sm.defaultState = empty;
+            return sm;
         }
 
         /// <summary>Empties a controller (layers, parameters, states, blend trees, transitions) but keeps the asset
@@ -563,7 +751,7 @@ namespace ShaftAttack.EditorTools
             Texture2D metal, Texture2D glow)
         {
             string path = Dir + "/" + name + ".mat";
-            Shader lit = Shader.Find("Universal Render Pipeline/Lit");
+            Shader lit = DigbyLitShader.Get(LitShaderPath);
             Material m = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (m == null)
             {

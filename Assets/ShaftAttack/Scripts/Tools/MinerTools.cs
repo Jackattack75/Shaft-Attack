@@ -73,11 +73,17 @@ namespace ShaftAttack
         public Material bombMaterial;
         public Material explosionMaterial;
 
+        /// <summary>True while the dig button is held and the game has the mouse. The animation reads this too:
+        /// let go right after a swing and he puts the pickaxe away instead of winding up for another.</summary>
+        public bool SwingHeld { get { return (look == null || look.CursorLocked) && GameInput.PrimaryHeld; } }
+
         public int Bombs { get { return bombs; } }
         public float BombRecharge { get { return bombs >= maxBombs ? 1f : bombTimer / bombRechargeTime; } }
 
         /// <summary>Fires on every pickaxe swing that connects. Camera kick, sound, particles.</summary>
         public System.Action<Vector3> OnPickaxeHit;
+        /// <summary>Fires on EVERY pickaxe swing: true = it dug rock, false = nothing was in reach. Animation.</summary>
+        public System.Action<bool> OnPickaxeSwing;
         public System.Action OnBombThrown;
 
         private int bombs;
@@ -114,19 +120,26 @@ namespace ShaftAttack
         private void Swing()
         {
             nextSwingTime = Time.time + swingInterval;
+            bool dug = Dig();
+            if (OnPickaxeSwing != null) OnPickaxeSwing(dug);
+        }
 
+        /// <summary>One pickaxe bite where you are aiming. False if no rock was in reach.</summary>
+        private bool Dig()
+        {
             int mask = ~(1 << gameObject.layer);
             RaycastHit hit;
             if (!Physics.Raycast(aim.position, aim.forward, out hit, pickaxeReach, mask, QueryTriggerInteraction.Ignore))
-                return;
+                return false;
 
             SmoothTerrain terrain = SmoothTerrain.Instance;
-            if (terrain == null || hit.collider.GetComponent<TerrainChunk>() == null) return;
+            if (terrain == null || hit.collider.GetComponent<TerrainChunk>() == null) return false;
 
             Vector3 center = hit.point + aim.forward * digInset;
             terrain.Dig(center, pickaxeRadius);
 
             if (OnPickaxeHit != null) OnPickaxeHit(hit.point);
+            return true;
         }
 
         // ------------------------------------------------------------------ bombs
