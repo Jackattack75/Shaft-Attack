@@ -518,7 +518,7 @@ MonoBehaviour:
   show: 0
   secondsEach: 4
   walkSpeed: 0.499
-  runSpeed: 1.823
+  runSpeed: 3.375
   showLabel: 1
 --- !u!1 &1865715911
 GameObject:

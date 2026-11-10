@@ -20,7 +20,7 @@ namespace ShaftAttack
 
         [Tooltip("Speed of the Walk / Run clips in m/s (from the Blender export).")]
         public float walkSpeed = 0.499f;
-        public float runSpeed = 1.823f;
+        public float runSpeed = 3.375f;
 
         public bool showLabel = true;
 
@@ -122,3 +122,4 @@ namespace ShaftAttack
         }
     }
 }
+

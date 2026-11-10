@@ -33,12 +33,14 @@ namespace ShaftAttack
         /// <summary>Call after changing teamColour from code.</summary>
         public void Apply()
         {
-            Renderer r = GetComponentInChildren<Renderer>();
-            if (r == null || teamSlot < 0 || teamSlot >= r.sharedMaterials.Length) return;
             if (block == null) block = new MaterialPropertyBlock();
-            r.GetPropertyBlock(block, teamSlot);
-            block.SetColor(BaseColorId, teamColour);
-            r.SetPropertyBlock(block, teamSlot);
+            foreach (Renderer r in GetComponentsInChildren<Renderer>(true))     // the player has two (FirstPersonBody)
+            {
+                if (teamSlot < 0 || teamSlot >= r.sharedMaterials.Length) continue;
+                r.GetPropertyBlock(block, teamSlot);
+                block.SetColor(BaseColorId, teamColour);
+                r.SetPropertyBlock(block, teamSlot);
+            }
         }
     }
 }

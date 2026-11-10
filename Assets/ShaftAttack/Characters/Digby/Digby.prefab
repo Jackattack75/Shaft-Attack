@@ -76,12 +76,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.DigbyAnimDriver
   walkSpeed: 0.5
-  runSpeed: 1.82
-  maxRunRate: 1.8
+  runSpeed: 3.375
+  sprintSpeed: 10
+  maxRunRate: 1.6
   jumpDetectSpeed: 2.5
   airGrace: 0.12
   faceMovement: 0
   turnSpeed: 540
+  legsFollowMovement: 0
+  maxLegYaw: 55
+  legTurnSpeed: 420
 --- !u!1001 &4312429502520391019
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -132,15 +136,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_AABB.m_Extent.x
-      value: 1.38477
+      value: 1.4157901
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_AABB.m_Extent.y
-      value: 1.1291363
+      value: 1.0241678
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_AABB.m_Extent.z
-      value: 1.3303196
+      value: 1.3303105
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

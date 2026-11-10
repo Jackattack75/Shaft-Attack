@@ -8,7 +8,8 @@ using UnityEngine;
 namespace ShaftAttack.EditorTools
 {
     /// <summary>Runs the Digby build when Assets/ShaftAttack/_ClaudeShots~/digby_build.txt appears
-    /// (lets tools outside Unity ask for a rebuild). digby_animator.txt also rebuilds Digby.controller.</summary>
+    /// (lets tools outside Unity ask for a rebuild). digby_animator.txt also rebuilds Digby.controller;
+    /// digby_player.txt (re)builds Digby's first-person body on Player.prefab.</summary>
     [InitializeOnLoad]
     internal static class DigbyBuildRequest
     {
@@ -27,6 +28,13 @@ namespace ShaftAttack.EditorTools
                 try { Directory.Delete(dir, true); } catch (System.Exception) { }
                 return;
             }
+            string playerRequest = Path.Combine(dir, "digby_player.txt");
+            if (File.Exists(playerRequest))
+            {
+                File.Delete(playerRequest);
+                DigbyImport.SafeBuildPlayerBody();
+                return;
+            }
             string request = Path.Combine(dir, "digby_build.txt");
             string animRequest = Path.Combine(dir, "digby_animator.txt");
             bool anim = File.Exists(animRequest);
@@ -39,7 +47,8 @@ namespace ShaftAttack.EditorTools
 
     /// <summary>
     /// Import settings and setup for Digby, the default miner (Assets/ShaftAttack/Characters/Digby).
-    /// Digby.fbx is rigged (Generic) with the clips Idle, Walk, Run, Jump, JumpStart, JumpAir, JumpLand.
+    /// Digby.fbx is rigged (Generic) with the clips Idle, Walk, Run, Jump, JumpStart, JumpAir, JumpLand and the player's
+    /// Sprint (10 m/s), Slide, Dash, Slam, SlamLand; bones Eye and SlideCam mark where the first-person camera goes.
     /// Builds the two URP Lit materials (Digby_Base, and Digby_Team for the helmet), Digby.controller
     /// (only if it doesn't exist yet, so hand edits survive) and Digby.prefab whenever the files are
     /// imported. "Shaft Attack/Rebuild Digby" redoes it by hand; "Rebuild Digby Animator" also remakes
@@ -52,8 +61,11 @@ namespace ShaftAttack.EditorTools
         public static readonly Color DefaultTeam = new Color(0.965f, 0.675f, 0.071f);   // yellow
         private const float EmissionStrength = 6f;                                       // baked as strength / 6
         public const float WalkSpeed = 0.499f;     // ground speed of the clips, m/s (Blender export)
-        public const float RunSpeed = 1.823f;
-        private static readonly string[] Loops = { "Idle", "Walk", "Run", "JumpAir" };
+        public const float RunSpeed = 3.375f;     // v2 (11-06): heavy sprint
+        public const float SprintSpeed = 10f;     // v4 (11-09): the player's run speed (PlayerMotor.runSpeed)
+        public const float PlayerBodyScale = 1.125f;   // his eyes (1.44 m) at the player's camera (1.62 m)
+        public const string PlayerPrefabPath = "Assets/ShaftAttack/Prefabs/Player.prefab";
+        private static readonly string[] Loops = { "Idle", "Walk", "Run", "JumpAir", "Sprint", "Slide", "Slam" };
 
         private bool Mine
         {
@@ -97,7 +109,7 @@ namespace ShaftAttack.EditorTools
             mi.importVisibility = false;
             mi.importConstraints = false;
             mi.meshCompression = ModelImporterMeshCompression.Off;
-            mi.isReadable = false;
+            mi.isReadable = true;            // FirstPersonBody copies the mesh at runtime (head hidden in first person)
             mi.weldVertices = true;
             // rig + animations: Generic, so the clips play exactly as made in Blender, on the spot
             mi.animationType = ModelImporterAnimationType.Generic;
@@ -189,6 +201,94 @@ namespace ShaftAttack.EditorTools
             SafeBuild(true, true);
         }
 
+        [MenuItem("Shaft Attack/Put Digby Body On Player")]
+        private static void BuildPlayerBodyFromMenu()
+        {
+            SafeBuildPlayerBody();
+        }
+
+        public static void SafeBuildPlayerBody()
+        {
+            string report;
+            try
+            {
+                report = BuildPlayerBody();
+            }
+            catch (System.Exception e)
+            {
+                report = "EXCEPTION " + e;
+                Debug.LogException(e);
+            }
+            Debug.Log("[Digby] player body: " + report);
+            try
+            {
+                string dir = Path.Combine(Application.dataPath, "ShaftAttack/_ClaudeShots~");
+                if (Directory.Exists(dir))
+                    File.AppendAllText(Path.Combine(dir, "digby_build_log.txt"),
+                        System.DateTime.Now.ToString("HH:mm:ss") + " player body: " + report + "\n");
+            }
+            catch (System.Exception)
+            {
+            }
+        }
+
+        /// <summary>
+        /// Gives Player.prefab Digby's body for first person: child "DigbyBody" (scaled so his eyes are at the
+        /// camera) holding the rigged model with Digby.controller, plus DigbyAnimDriver (fed by PlayerMotor, legs
+        /// turn toward strafes, plays backwards when backpedalling), FirstPersonBody (head hidden in your own view,
+        /// whole body in your shadow, body kept under the camera) and MinerTeamColour. Replaces an older DigbyBody.
+        /// </summary>
+        public static string BuildPlayerBody()
+        {
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(Dir + "/Digby.fbx");
+            AnimatorController controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+            Material body = AssetDatabase.LoadAssetAtPath<Material>(Dir + "/Digby_Base.mat");
+            Material team = AssetDatabase.LoadAssetAtPath<Material>(Dir + "/Digby_Team.mat");
+            if (model == null || controller == null || body == null || team == null) return "Digby files missing";
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefabPath) == null) return "no " + PlayerPrefabPath;
+
+            GameObject root = PrefabUtility.LoadPrefabContents(PlayerPrefabPath);
+            try
+            {
+                Transform old = root.transform.Find("DigbyBody");
+                if (old != null) Object.DestroyImmediate(old.gameObject);
+                GameObject bodyGo = new GameObject("DigbyBody");
+                bodyGo.transform.SetParent(root.transform, false);
+                bodyGo.transform.localScale = Vector3.one * PlayerBodyScale;
+
+                GameObject inst = (GameObject)PrefabUtility.InstantiatePrefab(model, bodyGo.transform);
+                inst.name = "Model";
+                float yaw = 180f;
+                Transform leftHand = FindDeep(inst.transform, "LeftHand");
+                if (leftHand != null) yaw = inst.transform.InverseTransformPoint(leftHand.position).x < 0f ? 0f : 180f;
+                inst.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+
+                SkinnedMeshRenderer skin = inst.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (skin == null) return "model not skinned";
+                skin.sharedMaterials = new[] { body, team };
+                Bounds b = skin.localBounds;
+                b.Expand(new Vector3(0.8f, 1.2f, 0.8f));
+                skin.localBounds = b;
+                Animator animator = inst.GetComponent<Animator>();
+                if (animator == null) animator = inst.AddComponent<Animator>();
+                animator.runtimeAnimatorController = controller;
+                animator.applyRootMotion = false;
+                animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+
+                bodyGo.AddComponent<MinerTeamColour>();
+                DigbyAnimDriver driver = bodyGo.AddComponent<DigbyAnimDriver>();
+                driver.legsFollowMovement = true;
+                bodyGo.AddComponent<FirstPersonBody>();
+                PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);
+                return "DigbyBody on Player.prefab: scale " + PlayerBodyScale + ", model yaw " + yaw + ", " +
+                       skin.bones.Length + " bones, controller " + controller.name;
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
         public static string Build(bool verbose, bool rebuildAnimator)
         {
             GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(Dir + "/Digby.fbx");
@@ -278,8 +378,10 @@ namespace ShaftAttack.EditorTools
         }
 
         /// <summary>
-        /// Digby.controller. Parameters: Speed (m/s), MoveRate (walk/run playback speed), Grounded, Jump (trigger).
-        /// Locomotion = 1D blend tree Idle / Walk / Run by Speed. Jump: JumpStart -> JumpAir (loop) -> JumpLand.
+        /// Digby.controller. Parameters: Speed (m/s), MoveRate (walk/run playback speed), Grounded, Jump (trigger);
+        /// with the player's clips also Sliding, Slamming (bools), Dash, SlamLand (triggers).
+        /// Locomotion = 1D blend tree Idle / Walk / Run / Sprint by Speed. Jump: JumpStart -> JumpAir (loop) -> JumpLand.
+        /// Slide (while Sliding), Dash (trigger, then back to Locomotion or JumpAir), Slam (while Slamming) -> SlamLand.
         /// "Jump" is the full show-off jump with the wind-up (played from code, e.g. DigbyShowcase).
         /// </summary>
         private static AnimatorController MakeController(Dictionary<string, AnimationClip> clips, bool rebuild)
@@ -289,13 +391,24 @@ namespace ShaftAttack.EditorTools
                 if (!clips.ContainsKey(n)) return AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
             AnimatorController existing = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
             if (existing != null && !rebuild) return existing;
-            if (existing != null) AssetDatabase.DeleteAsset(ControllerPath);
 
-            AnimatorController ac = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
+            // Rebuild in place: deleting and re-creating the asset left everything already loaded that uses it (the
+            // player's body in the open scene and in Player.prefab) with no controller until Unity reloaded them.
+            AnimatorController ac = existing != null ? Wipe(existing)
+                                                     : AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
             ac.AddParameter("Speed", AnimatorControllerParameterType.Float);
             ac.AddParameter("MoveRate", AnimatorControllerParameterType.Float);
             ac.AddParameter("Grounded", AnimatorControllerParameterType.Bool);
             ac.AddParameter("Jump", AnimatorControllerParameterType.Trigger);
+            bool moves = clips.ContainsKey("Sprint") && clips.ContainsKey("Slide") && clips.ContainsKey("Dash") &&
+                         clips.ContainsKey("Slam") && clips.ContainsKey("SlamLand");
+            if (moves)
+            {
+                ac.AddParameter("Sliding", AnimatorControllerParameterType.Bool);
+                ac.AddParameter("Slamming", AnimatorControllerParameterType.Bool);
+                ac.AddParameter("Dash", AnimatorControllerParameterType.Trigger);
+                ac.AddParameter("SlamLand", AnimatorControllerParameterType.Trigger);
+            }
             AnimatorControllerParameter[] ps = ac.parameters;
             foreach (AnimatorControllerParameter p in ps)
             {
@@ -313,6 +426,7 @@ namespace ShaftAttack.EditorTools
             tree.AddChild(clips["Idle"], 0f);
             tree.AddChild(clips["Walk"], WalkSpeed);
             tree.AddChild(clips["Run"], RunSpeed);
+            if (moves) tree.AddChild(clips["Sprint"], SprintSpeed);
             loco.speedParameterActive = true;
             loco.speedParameter = "MoveRate";
             sm.defaultState = loco;
@@ -354,8 +468,81 @@ namespace ShaftAttack.EditorTools
             t = show.AddTransition(loco);
             Timing(t, true, 0.97f, 0.1f);
 
+            if (moves)
+            {
+                // the player's moves (PlayerMotor): slide, dash, ground slam
+                AnimatorState slide = sm.AddState("Slide");
+                slide.motion = clips["Slide"];
+                AnimatorState dash = sm.AddState("Dash");
+                dash.motion = clips["Dash"];
+                AnimatorState slam = sm.AddState("Slam");
+                slam.motion = clips["Slam"];
+                AnimatorState slamLand = sm.AddState("SlamLand");
+                slamLand.motion = clips["SlamLand"];
+
+                t = sm.AddAnyStateTransition(dash);
+                t.AddCondition(AnimatorConditionMode.If, 0f, "Dash");
+                Timing(t, false, 0f, 0.03f);
+                t.canTransitionToSelf = true;
+                t = sm.AddAnyStateTransition(slam);
+                t.AddCondition(AnimatorConditionMode.If, 0f, "Slamming");
+                Timing(t, false, 0f, 0.06f);
+                t.canTransitionToSelf = false;
+                t = sm.AddAnyStateTransition(slide);
+                t.AddCondition(AnimatorConditionMode.If, 0f, "Sliding");
+                Timing(t, false, 0f, 0.06f);                    // the camera drops into a slide in ~0.06 s
+                t.canTransitionToSelf = false;
+
+                t = slide.AddTransition(loco);
+                t.AddCondition(AnimatorConditionMode.IfNot, 0f, "Sliding");
+                t.AddCondition(AnimatorConditionMode.If, 0f, "Grounded");
+                Timing(t, false, 0f, 0.15f);
+                t = slide.AddTransition(air);
+                t.AddCondition(AnimatorConditionMode.IfNot, 0f, "Sliding");
+                t.AddCondition(AnimatorConditionMode.IfNot, 0f, "Grounded");
+                Timing(t, false, 0f, 0.12f);
+
+                t = dash.AddTransition(loco);
+                t.AddCondition(AnimatorConditionMode.If, 0f, "Grounded");
+                Timing(t, true, 0.7f, 0.12f);
+                t = dash.AddTransition(air);
+                t.AddCondition(AnimatorConditionMode.IfNot, 0f, "Grounded");
+                Timing(t, true, 0.7f, 0.12f);
+
+                t = slam.AddTransition(slamLand);
+                t.AddCondition(AnimatorConditionMode.If, 0f, "SlamLand");
+                Timing(t, false, 0f, 0.02f);
+                t = slam.AddTransition(slamLand);                  // landed but the trigger was missed
+                t.AddCondition(AnimatorConditionMode.IfNot, 0f, "Slamming");
+                t.AddCondition(AnimatorConditionMode.If, 0f, "Grounded");
+                Timing(t, false, 0f, 0.03f);
+                t = slam.AddTransition(air);                       // slam cancelled in the air
+                t.AddCondition(AnimatorConditionMode.IfNot, 0f, "Slamming");
+                t.AddCondition(AnimatorConditionMode.IfNot, 0f, "Grounded");
+                Timing(t, false, 0f, 0.1f);
+
+                t = slamLand.AddTransition(loco);
+                t.AddCondition(AnimatorConditionMode.Greater, 1.2f, "Speed");
+                Timing(t, true, 0.45f, 0.15f);
+                t = slamLand.AddTransition(loco);
+                Timing(t, true, 0.9f, 0.2f);
+            }
+
             EditorUtility.SetDirty(ac);
             AssetDatabase.SaveAssets();
+            return ac;
+        }
+
+        /// <summary>Empties a controller (layers, parameters, states, blend trees, transitions) but keeps the asset
+        /// itself, so every reference to it stays good; then gives it an empty Base Layer like a new controller.</summary>
+        private static AnimatorController Wipe(AnimatorController ac)
+        {
+            ac.layers = new AnimatorControllerLayer[0];
+            ac.parameters = new AnimatorControllerParameter[0];
+            foreach (Object sub in AssetDatabase.LoadAllAssetsAtPath(ControllerPath))
+                if (sub != null && sub != ac) Object.DestroyImmediate(sub, true);
+            ac.AddLayer("Base Layer");
+            EditorUtility.SetDirty(ac);
             return ac;
         }
 
@@ -406,3 +593,4 @@ namespace ShaftAttack.EditorTools
     }
 }
 #endif
+
