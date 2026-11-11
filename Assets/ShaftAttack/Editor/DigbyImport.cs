@@ -679,21 +679,18 @@ namespace ShaftAttack.EditorTools
             {
                 GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(Dir + "/Digby.fbx");
                 AnimatorStateMachine right = AddArmLayer(ac, "RightArm", MakeMask("Digby_RightArm", model, RightArmBones));
-                AnimatorState rest = right.defaultState;
+                // No way back to "Empty": a finished clip just holds its last frame. DigbyAnimDriver fades the layer's
+                // weight to 0 when the move is over, which is what gives the arm back to the base layer.
                 foreach (string clip in new[] { "PickHit", "PickMiss" })
                 {
                     AnimatorState st = right.AddState(clip);
                     st.motion = clips[clip];
                     st.writeDefaultValues = false;
-                    t = st.AddTransition(rest);                    // done digging: let the arm go back to what it was doing
-                    Timing(t, true, 0.9f, 0.12f);
                 }
                 AnimatorStateMachine left = AddArmLayer(ac, "LeftArm", MakeMask("Digby_LeftArm", model, LeftArmBones));
                 AnimatorState thr = left.AddState("Throw");
                 thr.motion = clips["Throw"];
                 thr.writeDefaultValues = false;
-                t = thr.AddTransition(left.defaultState);
-                Timing(t, true, 0.8f, 0.15f);
             }
 
             EditorUtility.SetDirty(ac);
@@ -701,8 +698,10 @@ namespace ShaftAttack.EditorTools
             return ac;
         }
 
-        /// <summary>An extra animator layer that only moves the bones in `mask`. Its default state "Empty" plays
-        /// nothing, so the base layer shows until code starts one of its other states.</summary>
+        /// <summary>An extra animator layer that only moves the bones in `mask`, weight 0: it does nothing until
+        /// DigbyAnimDriver raises its weight for a dig / throw (and it lowers it again afterwards). Don't rely on the
+        /// "Empty" state to show the base layer: at weight 1 an empty state with Write Defaults off FREEZES the
+        /// masked bones in the last pose the layer played (11-11: the arms stopped swinging after a dig / throw).</summary>
         private static AnimatorStateMachine AddArmLayer(AnimatorController ac, string name, AvatarMask mask)
         {
             mask.hideFlags = HideFlags.HideInHierarchy;
@@ -711,7 +710,7 @@ namespace ShaftAttack.EditorTools
             AnimatorControllerLayer[] layers = ac.layers;
             int i = layers.Length - 1;
             layers[i].avatarMask = mask;
-            layers[i].defaultWeight = 1f;
+            layers[i].defaultWeight = 0f;
             layers[i].blendingMode = AnimatorLayerBlendingMode.Override;
             ac.layers = layers;
             AnimatorStateMachine sm = ac.layers[i].stateMachine;

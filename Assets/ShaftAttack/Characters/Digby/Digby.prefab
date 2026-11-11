@@ -92,6 +92,8 @@ MonoBehaviour:
   aimOutSpeed: 6
   stowAt: 0.78
   swingCommit: 0.15
+  armBlendIn: 0.05
+  armBlendOut: 0.15
 --- !u!114 &5839980087947016484
 MonoBehaviour:
   m_ObjectHideFlags: 0

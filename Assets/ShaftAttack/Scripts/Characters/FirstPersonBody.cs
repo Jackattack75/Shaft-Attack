@@ -16,6 +16,9 @@ namespace ShaftAttack
     ///    In a slide the camera drops below his eyes, so it sits in front of his chest instead (SlideCam bone),
     ///    following the animator's blend into and out of the slide. Whenever the camera is lower than his eyes
     ///    (the slide drop, a slam or landing dip) the body also steps back, so the camera never ends up inside him.
+    ///    Looking down, the body moves back as well (lookDownBack: like leaning your head out over your chest), so
+    ///    your chest only just shows at the bottom of the screen instead of covering half of it. Looking ahead it
+    ///    stays where it was, so the dash / throw / dig arms show as before.
     ///    The feet stay on the ground: only the horizontal position changes. Runs after CameraFeel, so it follows
     ///    the camera's dips and shakes too.
     ///  - Third person (ThirdPersonView, a test view): the whole body shows, head included, and it stands in
@@ -37,6 +40,16 @@ namespace ShaftAttack
         [Tooltip("When the camera is lower than his eyes (dropping into a slide before his body has), the camera moves up to this much further in front of him so it never ends up inside his chest.")]
         public float lowCameraForward = 0.35f;
 
+        [Header("Looking down")]
+        [Tooltip("Looking straight down, the body sits this much further back (metres), so you only just see your chest " +
+                 "at the bottom of the screen. 0 = it stays where it is.")]
+        public float lookDownBack = 0.5f;
+        [Tooltip("Looking further down than this (degrees below level), the body starts moving back...")]
+        public float lookDownFrom = 45f;
+        [Tooltip("...and from this angle on it is all the way back (straight down = 90).")]
+        public float lookDownTo = 89f;
+
+        [Header("Hiding")]
         [Tooltip("Hide the head in your own view.")]
         public bool hideHead = true;
 
@@ -205,7 +218,10 @@ namespace ShaftAttack
             float low = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.05f, 0.35f, eye.position.y - camPos.y));
             // where the camera goes on his body: in front of his face, measured from the top of his neck
             Vector3 face = headJoint != null ? headJoint.position + fwd * restEyeAhead : eye.position;
-            Vector3 spot = face + fwd * (eyeForwardOffset + lowCameraForward * low);
+            // looking down: the body moves back too, so the chest only just shows at the bottom of the screen
+            float down = Mathf.Asin(Mathf.Clamp(-view.forward.y, -1f, 1f)) * Mathf.Rad2Deg;
+            float back = lookDownBack * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(lookDownFrom, lookDownTo, down));
+            Vector3 spot = face + fwd * (eyeForwardOffset + back + lowCameraForward * low);
             float slide = SlidePose();
             if (slideCam != null && slide > 0f)
                 spot = Vector3.Lerp(spot, slideCam.position, Mathf.SmoothStep(0f, 1f, slide));

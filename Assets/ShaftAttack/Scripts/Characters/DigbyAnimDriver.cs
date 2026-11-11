@@ -12,7 +12,9 @@ namespace ShaftAttack
     ///   Jump      fired by PlayerMotor's jump events, or when he shoots upward off the ground
     ///   WallJump + WallSide   kick off a wall, with which side the wall was on
     ///   Sliding / Slamming / Dash / SlamLand   the player's moves, straight from PlayerMotor
-    /// and plays the arm moves on their own layers, over whatever the legs are doing:
+    /// and plays the arm moves on their own layers, over whatever the legs are doing. Those layers are faded in when
+    /// a move starts and all the way out when it is over (their weights are set here, see UpdateArms), so the arms
+    /// always go back to the running / walking swing:
     ///   PickHit / PickMiss   on every pickaxe swing (MinerTools.OnPickaxeSwing); the pickaxe comes off his back.
     ///                        The clip starts ON the hit (the game digs the instant you click), then winds up and
     ///                        strikes again in time with the next swing. Let go early and he skips the wind-up and
@@ -69,6 +71,10 @@ namespace ShaftAttack
         [Tooltip("Seconds after a swing starts. Let go of the dig button before this and he puts the pickaxe away " +
                  "instead of winding up again; after it the next strike is already on its way and finishes.")]
         public float swingCommit = 0.15f;
+        [Tooltip("Seconds for the dig / throw arm to take over from the running arm when the move starts.")]
+        public float armBlendIn = 0.05f;
+        [Tooltip("Seconds for the arm to go back to the running / walking swing when the move is over.")]
+        public float armBlendOut = 0.15f;
 
         /// <summary>Is the dig button still down? The player's MinerTools sets this every frame; bots and
         /// networked copies set it themselves (leave it false and every Swing is a single strike).</summary>
@@ -87,6 +93,7 @@ namespace ShaftAttack
         private static readonly int WallSideId = Animator.StringToHash("WallSide");
         private const float SwingClipLength = 20f / 30f;    // PickHit / PickMiss: 20 frames at 30 fps
         private const float SwingPutAwayFrom = 12f / 30f;   // where "lift it out and hang it on his back" starts
+        private const float ThrowRelaxFrom = 10f / 30f;     // Throw: the arm has followed through and relaxes here
         private static readonly RaycastHit[] Hits = new RaycastHit[8];
 
         private Animator animator;
@@ -115,6 +122,10 @@ namespace ShaftAttack
         private bool puttingAway;
         private string swingState;
         private float swingStart;       // game time the swing clip started (moved when we skip ahead in it)
+        private bool throwing;
+        private float throwStart;
+        private float rightWeight;      // the arm layers' weights, run from UpdateArms
+        private float leftWeight;
 
         private void Awake()
         {
@@ -139,6 +150,9 @@ namespace ShaftAttack
                     if (c != null && c.name == "Sprint") hasSprint = true;
                 rightArmLayer = animator.GetLayerIndex("RightArm");
                 leftArmLayer = animator.GetLayerIndex("LeftArm");
+                // the arm layers stay off until a dig or a throw starts (see UpdateArms)
+                if (rightArmLayer > 0) animator.SetLayerWeight(rightArmLayer, 0f);
+                if (leftArmLayer > 0) animator.SetLayerWeight(leftArmLayer, 0f);
             }
         }
 
@@ -186,7 +200,9 @@ namespace ShaftAttack
         {
             if (animator == null || rightArmLayer < 0) return;
             swingState = hit ? "PickHit" : "PickMiss";
-            animator.CrossFadeInFixedTime(swingState, 0.04f, rightArmLayer, 0f);
+            // arm layer off: start the clip outright (its weight fades it in); mid-swing: blend into the next swing
+            if (rightWeight <= 0f) animator.Play(swingState, rightArmLayer, 0f);
+            else animator.CrossFadeInFixedTime(swingState, 0.04f, rightArmLayer, 0f);
             swingStart = Time.time;
             swinging = true;
             puttingAway = false;
@@ -198,7 +214,10 @@ namespace ShaftAttack
         public void Throw()
         {
             if (animator == null || leftArmLayer < 0) return;
-            animator.CrossFadeInFixedTime("Throw", 0.03f, leftArmLayer, 0f);
+            if (leftWeight <= 0f) animator.Play("Throw", leftArmLayer, 0f);
+            else animator.CrossFadeInFixedTime("Throw", 0.03f, leftArmLayer, 0f);
+            throwStart = Time.time;
+            throwing = true;
             aimUntil = Mathf.Max(aimUntil, Time.time + 0.2f);
         }
 
@@ -264,7 +283,7 @@ namespace ShaftAttack
                 animator.SetBool(SlidingId, sliding);
                 animator.SetBool(SlammingId, slamming);
             }
-            UpdateSwing();
+            UpdateArms(dt);
 
             if (faceMovement && flat.sqrMagnitude > 0.04f)
             {
@@ -274,25 +293,56 @@ namespace ShaftAttack
         }
 
         /// <summary>
-        /// Follows the swing clip by its own clock. Dig button let go soon after a swing: skip the wind-up and go
-        /// straight to putting the pickaxe away. When the clip reaches the point where his hand is over his
+        /// The arm moves, each by its own clock. Dig button let go soon after a swing: skip the wind-up and go
+        /// straight to putting the pickaxe away. When the swing reaches the point where his hand is over his
         /// shoulder, the pickaxe goes back on his back.
+        /// The arm layers' weights: up to 1 as soon as a move starts, back to 0 when it is over, so the running /
+        /// walking arms come back. (Left at weight 1, an arm layer kept holding the last pose of its clip after the
+        /// clip had ended: its "Empty" state doesn't give the arm back, it freezes it there.)
         /// </summary>
-        private void UpdateSwing()
+        private void UpdateArms(float dt)
         {
             if (tools != null) digHeld = tools.SwingHeld;
-            if (!swinging) return;
-            float t = Time.time - swingStart;
-            if (!puttingAway && !digHeld && t >= 0.06f && t < swingCommit)
+            float wantRight = 0f, wantLeft = 0f;
+            if (swinging)
             {
-                animator.CrossFadeInFixedTime(swingState, 0.1f, rightArmLayer, SwingPutAwayFrom);
-                swingStart = Time.time - SwingPutAwayFrom;
-                t = SwingPutAwayFrom;
-                puttingAway = true;
-                aimUntil = Time.time;
+                float t = Time.time - swingStart;
+                if (!puttingAway && !digHeld && t >= 0.06f && t < swingCommit)
+                {
+                    animator.CrossFadeInFixedTime(swingState, 0.1f, rightArmLayer, SwingPutAwayFrom);
+                    swingStart = Time.time - SwingPutAwayFrom;
+                    t = SwingPutAwayFrom;
+                    puttingAway = true;
+                    aimUntil = Time.time;
+                }
+                float stowTime = stowAt * SwingClipLength;
+                if (t >= stowTime && pickaxe != null && pickaxe.InHand) pickaxe.SetInHand(false);
+                wantRight = FadeOut(t, stowTime);           // the pickaxe is on his back: give the arm back
+                if (t >= stowTime + armBlendOut) swinging = false;
             }
-            if (t >= stowAt * SwingClipLength && pickaxe != null && pickaxe.InHand) pickaxe.SetInHand(false);
-            if (t >= SwingClipLength + 0.2f) swinging = false;
+            if (throwing)
+            {
+                float t = Time.time - throwStart;
+                wantLeft = FadeOut(t, ThrowRelaxFrom);
+                if (t >= ThrowRelaxFrom + armBlendOut) throwing = false;
+            }
+            rightWeight = ArmWeight(rightWeight, wantRight, dt);
+            leftWeight = ArmWeight(leftWeight, wantLeft, dt);
+            if (rightArmLayer > 0) animator.SetLayerWeight(rightArmLayer, rightWeight);
+            if (leftArmLayer > 0) animator.SetLayerWeight(leftArmLayer, leftWeight);
+        }
+
+        /// <summary>1 until <paramref name="from"/> seconds into the move, then down to 0 over armBlendOut.</summary>
+        private float FadeOut(float t, float from)
+        {
+            return armBlendOut > 0f ? 1f - Mathf.Clamp01((t - from) / armBlendOut) : (t < from ? 1f : 0f);
+        }
+
+        /// <summary>Comes in over armBlendIn; goes out exactly as FadeOut says (that is already timed to the clip).</summary>
+        private float ArmWeight(float weight, float want, float dt)
+        {
+            if (want <= weight) return want;
+            return armBlendIn > 0f ? Mathf.MoveTowards(weight, want, dt / armBlendIn) : want;
         }
 
         /// <summary>
