@@ -497,6 +497,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8069311956253681081, guid: d1ddc2073122841ad8e965131d0603eb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1796105272}
+    - targetCorrespondingSourceObject: {fileID: 8069311956253681081, guid: d1ddc2073122841ad8e965131d0603eb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1796105279}
+    - targetCorrespondingSourceObject: {fileID: 8069311956253681081, guid: d1ddc2073122841ad8e965131d0603eb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1796105278}
   m_SourcePrefab: {fileID: 100100000, guid: d1ddc2073122841ad8e965131d0603eb, type: 3}
 --- !u!1 &1796105271 stripped
 GameObject:
@@ -520,6 +526,35 @@ MonoBehaviour:
   walkSpeed: 0.499
   runSpeed: 3.375
   showLabel: 1
+--- !u!114 &1796105278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1796105271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b16ee85a973334fe3a661fe7abfaa899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.TargetDummy
+  respawnDelay: 3
+  flinch: 7
+  height: 1.75
+  radius: 0.45
+--- !u!114 &1796105279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1796105271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06990a1dc248c4a25b09f7684022d575, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.Health
+  maxHealth: 100
 --- !u!1 &1865715911
 GameObject:
   m_ObjectHideFlags: 0

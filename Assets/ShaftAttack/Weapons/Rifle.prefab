@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &2917734733390707086
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8820736475211726959, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f1e07dba1bb17410d9c6688f29671dfe, type: 2}
+    - target: {fileID: -8679921383154817045, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -2188335606720265918, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f1e07dba1bb17410d9c6688f29671dfe, type: 2}
+    - target: {fileID: -2188335606720265918, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 8968fd2cbeaee4d3bbda1f56b66c1424, type: 2}
+    - target: {fileID: 919132149155446097, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      propertyPath: m_Name
+      value: Rifle
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1072795925253843108}
+  m_SourcePrefab: {fileID: 100100000, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+--- !u!1 &2647141958738199775 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: ca83a0635650041009df3e9c72d019a9, type: 3}
+  m_PrefabInstance: {fileID: 2917734733390707086}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1072795925253843108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2647141958738199775}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69b49852820f241a48030046fc5b5026, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.GunModel
+  grip: {fileID: 0}
+  muzzle: {fileID: 0}
+  trigger: {fileID: 0}
+  foregrip: {fileID: 0}

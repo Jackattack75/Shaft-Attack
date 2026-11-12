@@ -468,6 +468,14 @@ namespace ShaftAttack
             return (layers != null && i < layers.Length) ? layers[i].hardness : 1f;
         }
 
+        /// <summary>The colour of the rock layer at a world point (bullet dust and chips use it).</summary>
+        public Color ColorAt(Vector3 worldPoint)
+        {
+            Vector3 p = transform.InverseTransformPoint(worldPoint);
+            int i = LayerAt(p.x, p.y, p.z);
+            return (layers != null && i < layers.Length) ? layers[i].color : new Color(0.48f, 0.37f, 0.25f);
+        }
+
         // ------------------------------------------------------------------ sampling
 
         /// <summary>Density at a sample index. Outside the world: rock to the sides and below, air above.</summary>

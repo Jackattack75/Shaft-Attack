@@ -94,6 +94,8 @@ MonoBehaviour:
   swingCommit: 0.15
   armBlendIn: 0.05
   armBlendOut: 0.15
+  gunAimLean: 0.5
+  twoHandTwist: 24
 --- !u!114 &5839980087947016484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -160,15 +162,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_AABB.m_Extent.x
-      value: 1.4157902
+      value: 1.4149163
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_AABB.m_Extent.y
-      value: 1.0241678
+      value: 1.0238072
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: m_AABB.m_Extent.z
-      value: 1.3303105
+      value: 1.3300693
       objectReference: {fileID: 0}
     - target: {fileID: -8106728909163707649, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

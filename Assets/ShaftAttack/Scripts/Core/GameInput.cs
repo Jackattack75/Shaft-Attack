@@ -12,7 +12,8 @@ namespace ShaftAttack
     /// All polled on demand, so script execution order never matters.
     ///
     /// Bindings: Shift dash, Ctrl slide (ground-slam in the air), Space jump,
-    /// left mouse pickaxe, right mouse bomb. No sprint key - you are always running.
+    /// left mouse uses what is in your hand (pickaxe digs, guns shoot), right mouse or Q bomb,
+    /// 1 / 2 / 3 pickaxe / pistol / rifle. No sprint key - you are always running.
     /// V switches first person / third person (test view), the mouse wheel zooms it.
     /// </summary>
     public static class GameInput
@@ -191,6 +192,34 @@ namespace ShaftAttack
                 return m != null && m.leftButton.wasPressedThisFrame;
 #else
                 return Input.GetMouseButtonDown(0);
+#endif
+            }
+        }
+
+        /// <summary>Left mouse pressed this frame (one shot from a semi-automatic gun).</summary>
+        public static bool PrimaryPressedThisFrame
+        {
+            get { return ClickPressedThisFrame; }
+        }
+
+        /// <summary>Number key pressed this frame: 1 -> 0 (pickaxe), 2 -> 1, 3 -> 2 ... up to 5. -1 = none.</summary>
+        public static int SlotPressedThisFrame
+        {
+            get
+            {
+#if ENABLE_INPUT_SYSTEM
+                Keyboard kb = Keyboard.current;
+                if (kb == null) return -1;
+                if (kb.digit1Key.wasPressedThisFrame || kb.numpad1Key.wasPressedThisFrame) return 0;
+                if (kb.digit2Key.wasPressedThisFrame || kb.numpad2Key.wasPressedThisFrame) return 1;
+                if (kb.digit3Key.wasPressedThisFrame || kb.numpad3Key.wasPressedThisFrame) return 2;
+                if (kb.digit4Key.wasPressedThisFrame || kb.numpad4Key.wasPressedThisFrame) return 3;
+                if (kb.digit5Key.wasPressedThisFrame || kb.numpad5Key.wasPressedThisFrame) return 4;
+                return -1;
+#else
+                for (int i = 0; i < 5; i++)
+                    if (Input.GetKeyDown(KeyCode.Alpha1 + i) || Input.GetKeyDown(KeyCode.Keypad1 + i)) return i;
+                return -1;
 #endif
             }
         }

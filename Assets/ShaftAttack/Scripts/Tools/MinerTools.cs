@@ -5,7 +5,8 @@ namespace ShaftAttack
     /// <summary>
     /// The miner's digging kit.
     ///
-    ///  Pickaxe (hold left mouse): fast, wide, close-range bites. Your tunnelling tool.
+    ///  Pickaxe (hold left mouse while it's in your hand - key 1, see Loadout): fast, wide, close-range bites. Your
+    ///  tunnelling tool.
     ///  Bombs (right mouse or Q): big craters, slow to refill, and they launch you hard if
     ///  you're close - throw one at your feet and you've got a rocket jump.
     ///
@@ -20,6 +21,7 @@ namespace ShaftAttack
         public Transform aim;
         public PlayerMotor motor;
         public PlayerLook look;
+        public Loadout loadout;
 
         [Header("Pickaxe (hold left mouse)")]
         public float pickaxeReach = 3.5f;
@@ -75,7 +77,10 @@ namespace ShaftAttack
 
         /// <summary>True while the dig button is held and the game has the mouse. The animation reads this too:
         /// let go right after a swing and he puts the pickaxe away instead of winding up for another.</summary>
-        public bool SwingHeld { get { return (look == null || look.CursorLocked) && GameInput.PrimaryHeld; } }
+        public bool SwingHeld { get { return (look == null || look.CursorLocked) && PickaxeReady && GameInput.PrimaryHeld; } }
+
+        /// <summary>The pickaxe is in your hand and ready (no Loadout = always).</summary>
+        public bool PickaxeReady { get { return loadout == null || (loadout.PickaxeOut && loadout.Ready); } }
 
         public int Bombs { get { return bombs; } }
         public float BombRecharge { get { return bombs >= maxBombs ? 1f : bombTimer / bombRechargeTime; } }
@@ -95,6 +100,7 @@ namespace ShaftAttack
         {
             if (motor == null) motor = GetComponent<PlayerMotor>();
             if (look == null) look = GetComponent<PlayerLook>();
+            if (loadout == null) loadout = GetComponent<Loadout>();
             if (aim == null)
             {
                 Camera cam = GetComponentInChildren<Camera>();
@@ -111,7 +117,7 @@ namespace ShaftAttack
             // While the cursor is free, clicks belong to the editor, not the game.
             if (look != null && !look.CursorLocked) return;
 
-            if (GameInput.PrimaryHeld && Time.time >= nextSwingTime) Swing();
+            if (GameInput.PrimaryHeld && PickaxeReady && Time.time >= nextSwingTime) Swing();
             if (GameInput.SecondaryPressedThisFrame) ThrowBomb();
         }
 

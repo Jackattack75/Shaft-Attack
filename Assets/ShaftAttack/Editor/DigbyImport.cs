@@ -50,7 +50,8 @@ namespace ShaftAttack.EditorTools
     /// Digby.fbx is rigged (Generic) with the clips Idle, Walk, Run, Jump, JumpStart, JumpRise / JumpAir / JumpFall,
     /// JumpLand, WallJumpL / WallJumpR and the player's Sprint (10 m/s), Slide, Dash, Slam, SlamLand, PickHit, PickMiss,
     /// Throw; bones Eye and SlideCam mark where the first-person camera goes; his pickaxe (PickaxeMesh) rides on the
-    /// Pickaxe bone in his right fist and is stowed on the PickaxeBack bone by DigbyPickaxe.
+    /// Pickaxe bone in his right fist and is stowed on the PickaxeBack bone by DigbyPickaxe. v6 (11-12): trigger fingers
+    /// (Left/RightIndex1, Index2) and LeftGrip (the left fist's grip point, for two-handed guns).
     /// Builds the two URP Lit materials (Digby_Base, and Digby_Team for the helmet), Digby.controller
     /// (only if it doesn't exist yet, so hand edits survive) and Digby.prefab whenever the files are
     /// imported. "Shaft Attack/Rebuild Digby" redoes it by hand; "Rebuild Digby Animator" also remakes
@@ -73,9 +74,9 @@ namespace ShaftAttack.EditorTools
         private static readonly string[] Loops = { "Idle", "Walk", "Run", "JumpAir", "JumpRise", "JumpFall", "Sprint", "Slide", "Slam" };
         // bones each arm layer of the animator may move (v5): the pickaxe swing and the bomb throw play over the legs
         private static readonly string[] RightArmBones = { "Chest", "RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand",
-                                                           "Half_Shoulder.R", "Half_Elbow.R", "Pickaxe" };
+                                                           "Half_Shoulder.R", "Half_Elbow.R", "Pickaxe", "RightIndex1", "RightIndex2" };
         private static readonly string[] LeftArmBones = { "Chest", "LeftShoulder", "LeftUpperArm", "LeftLowerArm", "LeftHand",
-                                                          "Half_Shoulder.L", "Half_Elbow.L" };
+                                                          "Half_Shoulder.L", "Half_Elbow.L", "LeftIndex1", "LeftIndex2", "LeftGrip" };
 
         private bool Mine
         {
@@ -246,7 +247,8 @@ namespace ShaftAttack.EditorTools
         /// Gives Player.prefab Digby's body for first person: child "DigbyBody" (scaled so his eyes are at the
         /// camera) holding the rigged model with Digby.controller, plus DigbyAnimDriver (fed by PlayerMotor, legs
         /// turn toward strafes, plays backwards when backpedalling), FirstPersonBody (head hidden in your own view,
-        /// whole body in your shadow, body kept under the camera) and MinerTeamColour. Replaces an older DigbyBody.
+        /// whole body in your shadow, body kept under the camera), DigbyGunHold (the gun in his hands) and MinerTeamColour.
+    /// Replaces an older DigbyBody.
         /// Also puts ThirdPersonView on the Player (V switches to a third-person test view).
         /// </summary>
         public static string BuildPlayerBody()
@@ -292,6 +294,7 @@ namespace ShaftAttack.EditorTools
                 driver.legsFollowMovement = true;
                 if (hasPick) bodyGo.AddComponent<DigbyPickaxe>();
                 FirstPersonBody fp = bodyGo.AddComponent<FirstPersonBody>();
+                bodyGo.AddComponent<DigbyGunHold>();                     // holds the gun you have out (Loadout)
                 Transform eyeBone = FindDeep(inst.transform, "Eye");
                 Transform headBone = FindDeep(inst.transform, "Head");
                 if (eyeBone != null && headBone != null)        // rest pose here: how far his eyes are in front of his neck

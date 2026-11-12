@@ -23,6 +23,8 @@ namespace ShaftAttack
     ///    the camera's dips and shakes too.
     ///  - Third person (ThirdPersonView, a test view): the whole body shows, head included, and it stands in
     ///    the middle of the player, where other players would see it.
+    ///  - Guns: while one is out, the first-person gun view (GunViewmodel) has its own arms, so the body's arm(s)
+    ///    holding the gun are folded away in your view (SetArmsHidden). Your shadow still shows them.
     /// </summary>
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(100)]
@@ -65,7 +67,14 @@ namespace ShaftAttack
         private SkinnedMeshRenderer firstPerson;
         private Animator animator;
         private bool thirdPerson;
+        private Transform[] armProxiesRight = new Transform[0];
+        private Transform[] armProxiesLeft = new Transform[0];
+        private bool armsHiddenRight, armsHiddenLeft;
         private static readonly int SlideHash = Animator.StringToHash("Slide");
+        private static readonly string[] RightArm = { "RightUpperArm", "RightLowerArm", "RightHand", "RightIndex1", "RightIndex2", "Half_Elbow.R" };
+        private static readonly string[] LeftArm = { "LeftUpperArm", "LeftLowerArm", "LeftHand", "LeftIndex1", "LeftIndex2", "Half_Elbow.L" };
+
+        public bool IsThirdPerson { get { return thirdPerson; } }
 
         private void Start()
         {
@@ -101,16 +110,38 @@ namespace ShaftAttack
             fold.transform.SetParent(head, false);
             fold.transform.localScale = Vector3.one * 0.0001f;
             int foldIdx = bones.Length;
-            Transform[] newBones = new Transform[bones.Length + 1];
+            // and a stand-in for every arm bone (same place, full size): shrunk to nothing when a gun is out
+            // (SetArmsHidden), which folds that arm away in your view only
+            var proxies = new System.Collections.Generic.List<Transform>();
+            var proxyOf = new System.Collections.Generic.Dictionary<int, int>();
+            var right = new System.Collections.Generic.List<Transform>();
+            var left = new System.Collections.Generic.List<Transform>();
+            for (int i = 0; i < bones.Length; i++)
+            {
+                if (bones[i] == null) continue;
+                bool r = System.Array.IndexOf(RightArm, bones[i].name) >= 0;
+                bool l = System.Array.IndexOf(LeftArm, bones[i].name) >= 0;
+                if (!r && !l) continue;
+                GameObject px = new GameObject("FP_" + bones[i].name);
+                px.transform.SetParent(bones[i], false);
+                proxyOf[i] = bones.Length + 1 + proxies.Count;
+                proxies.Add(px.transform);
+                (r ? right : left).Add(px.transform);
+            }
+            armProxiesRight = right.ToArray();
+            armProxiesLeft = left.ToArray();
+            Transform[] newBones = new Transform[bones.Length + 1 + proxies.Count];
             bones.CopyTo(newBones, 0);
             newBones[foldIdx] = fold.transform;
+            for (int i = 0; i < proxies.Count; i++) newBones[bones.Length + 1 + i] = proxies[i];
 
             Mesh copy = Instantiate(mesh);
             copy.name = mesh.name + " (first person)";
             Matrix4x4[] bind = mesh.bindposes;
-            Matrix4x4[] newBind = new Matrix4x4[bind.Length + 1];
+            Matrix4x4[] newBind = new Matrix4x4[newBones.Length];
             bind.CopyTo(newBind, 0);
             newBind[foldIdx] = bind[headIdx];
+            foreach (var kv in proxyOf) newBind[kv.Value] = bind[kv.Key];
             copy.bindposes = newBind;
 
             BoneWeight[] w = mesh.boneWeights;
@@ -119,12 +150,19 @@ namespace ShaftAttack
                 BoneWeight b = w[i];
                 float h = (b.boneIndex0 == headIdx ? b.weight0 : 0f) + (b.boneIndex1 == headIdx ? b.weight1 : 0f) +
                           (b.boneIndex2 == headIdx ? b.weight2 : 0f) + (b.boneIndex3 == headIdx ? b.weight3 : 0f);
-                if (h <= 0f) continue;
-                int to = h >= 0.99f ? foldIdx : neckIdx;      // all head: fold it away; shared with the neck: keep it
-                if (b.boneIndex0 == headIdx) b.boneIndex0 = to;
-                if (b.boneIndex1 == headIdx) b.boneIndex1 = to;
-                if (b.boneIndex2 == headIdx) b.boneIndex2 = to;
-                if (b.boneIndex3 == headIdx) b.boneIndex3 = to;
+                if (h > 0f)
+                {
+                    int to = h >= 0.99f ? foldIdx : neckIdx;      // all head: fold it away; shared with the neck: keep it
+                    if (b.boneIndex0 == headIdx) b.boneIndex0 = to;
+                    if (b.boneIndex1 == headIdx) b.boneIndex1 = to;
+                    if (b.boneIndex2 == headIdx) b.boneIndex2 = to;
+                    if (b.boneIndex3 == headIdx) b.boneIndex3 = to;
+                }
+                int p;
+                if (b.weight0 > 0f && proxyOf.TryGetValue(b.boneIndex0, out p)) b.boneIndex0 = p;
+                if (b.weight1 > 0f && proxyOf.TryGetValue(b.boneIndex1, out p)) b.boneIndex1 = p;
+                if (b.weight2 > 0f && proxyOf.TryGetValue(b.boneIndex2, out p)) b.boneIndex2 = p;
+                if (b.weight3 > 0f && proxyOf.TryGetValue(b.boneIndex3, out p)) b.boneIndex3 = p;
                 w[i] = Merge(b);
             }
             copy.boneWeights = w;
@@ -145,6 +183,22 @@ namespace ShaftAttack
             firstPerson.quality = source.quality;
             firstPerson.shadowCastingMode = ShadowCastingMode.Off;
             firstPerson.receiveShadows = true;
+        }
+
+        /// <summary>Fold the right / left arm away in your own view (a gun is out: the gun view has its own arms).
+        /// Third person and your shadow always show both.</summary>
+        public void SetArmsHidden(bool right, bool left)
+        {
+            if (right != armsHiddenRight)
+            {
+                armsHiddenRight = right;
+                foreach (Transform t in armProxiesRight) t.localScale = Vector3.one * (right ? 0.0001f : 1f);
+            }
+            if (left != armsHiddenLeft)
+            {
+                armsHiddenLeft = left;
+                foreach (Transform t in armProxiesLeft) t.localScale = Vector3.one * (left ? 0.0001f : 1f);
+            }
         }
 
         /// <summary>Third-person test view: true shows the whole body (head and all) standing in the middle of the

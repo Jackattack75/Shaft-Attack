@@ -15,5 +15,14 @@ namespace ShaftAttack
         {
             if (Explosion != null) Explosion(position, radius);
         }
+
+        /// <summary>Something with Health took damage: (what was hit, the hit, did it die). Hit markers, damage
+        /// numbers, kill feed, later: networking.</summary>
+        public static event System.Action<Health, DamageInfo, bool> Damaged;
+
+        public static void RaiseDamaged(Health target, DamageInfo info, bool killed)
+        {
+            if (Damaged != null) Damaged(target, info, killed);
+        }
     }
 }

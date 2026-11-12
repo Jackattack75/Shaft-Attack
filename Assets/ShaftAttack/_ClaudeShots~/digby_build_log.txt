@@ -1,0 +1,1 @@
+08:38:19 built: 7724 triangles, 2 material slots, 41 bones, 19 clips (Idle Walk Run Sprint JumpStart JumpFall JumpAir JumpRise JumpLand Jump WallJumpL WallJumpR Slide Dash Slam SlamLand PickHit PickMiss Throw), model yaw 180, controller Assets/ShaftAttack/Characters/Digby/Digby.controller (3 layers, 11 parameters), pickaxe

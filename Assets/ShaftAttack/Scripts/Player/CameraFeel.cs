@@ -39,7 +39,7 @@ namespace ShaftAttack
         public float landDip = 0.06f;
         public float dipRecovery = 7f;
 
-        [Header("Pickaxe kick")]
+        [Header("Pickaxe kick (guns kick the other way, see GunDefinition.cameraKick)")]
         [Tooltip("Degrees the view nods down on each pickaxe hit.")]
         public float pickaxeKick = 2.2f;
         public float kickRecovery = 16f;
@@ -94,6 +94,12 @@ namespace ShaftAttack
         private void HandleWallJump() { fovPunch += wallJumpFovPunch; }
         private void HandleSlam(Vector3 position) { dip += slamDip; }
         private void HandlePickaxe(Vector3 point) { kick = pickaxeKick; }
+
+        /// <summary>A gunshot: the view nods UP by `degrees` and comes back (kickRecovery). Stacks a little on full auto.</summary>
+        public void GunKick(float degrees)
+        {
+            kick = Mathf.Max(kick - degrees, -Mathf.Max(2f * degrees, 1.5f));
+        }
 
         private void HandleExplosion(Vector3 position, float radius)
         {

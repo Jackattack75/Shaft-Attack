@@ -58,6 +58,15 @@ namespace ShaftAttack
                 cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
         }
 
+        /// <summary>Gun recoil: your aim kicks up by pitchUp degrees and sideways by yaw degrees, and stays there.</summary>
+        public void AddRecoil(float pitchUp, float yaw)
+        {
+            pitch = Mathf.Clamp(pitch - pitchUp, -maxPitch, maxPitch);
+            transform.Rotate(Vector3.up, yaw, Space.Self);
+            if (cameraPivot != null)
+                cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        }
+
         public void SetCursorLocked(bool locked)
         {
             CursorLocked = locked;

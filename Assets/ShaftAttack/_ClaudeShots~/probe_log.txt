@@ -1,0 +1,21 @@
+0.000 start 19 steps
+0.802 info start state Running speed 0.0 | slot 0 Pickaxe ready True | shots 0 trigger 0.00 bloom 0.00 | bullets 0 | vm False | Digby hp 100 | terrain queued 0 0.0ms | dt 5ms
+1.005 tp (32.00, 7.00, 32.00)
+1.301 yaw 0
+1.402 pitch 5
+1.604 tap 2
+2.302 shot shot_01_cave_pistol.png | state Running speed 0.0 | slot 1 Pistol ready True | shots 0 trigger 0.00 bloom 0.00 | bullets 0 | vm True | Digby hp 100 | terrain queued 0 0.0ms | dt 4ms
+2.354 screen cave_pistol | state Running speed 0.0 | slot 1 Pistol ready True | shots 0 trigger 0.00 bloom 0.00 | bullets 0 | vm True | Digby hp 100 | terrain queued 0 0.0ms | dt 4ms
+2.502 yaw 90
+2.701 shot shot_02_cave_pistol_b.png | state Running speed 0.0 | slot 1 Pistol ready True | shots 0 trigger 0.00 bloom 0.00 | bullets 0 | vm True | Digby hp 100 | terrain queued 0 0.0ms | dt 5ms
+2.802 tap 3
+3.403 shot shot_03_cave_rifle.png | state Running speed 0.0 | slot 2 Rifle ready True | shots 0 trigger 0.00 bloom 0.00 | bullets 0 | vm True | Digby hp 100 | terrain queued 0 0.0ms | dt 7ms
+3.502 keys LMB
+3.701 shot shot_04_cave_rifle_fire.png | state Running speed 0.0 | slot 2 Rifle ready True | shots 2 trigger 1.00 bloom 0.00 | bullets 0 | vm True | Digby hp 100 | terrain queued 0 0.0ms | dt 5ms
+3.802 keys none
+4.002 yaw 180
+4.202 shot shot_05_cave_rifle_b.png | state Running speed 0.0 | slot 2 Rifle ready True | shots 3 trigger 0.00 bloom 0.00 | bullets 0 | vm True | Digby hp 100 | terrain queued 0 0.0ms | dt 4ms
+4.302 tap 1
+4.802 shot shot_06_cave_pickaxe.png | state Running speed 0.0 | slot 0 Pickaxe ready True | shots 3 trigger 0.00 bloom 0.00 | bullets 0 | vm False | Digby hp 100 | terrain queued 0 0.0ms | dt 4ms
+5.002 info end state Running speed 0.0 | slot 0 Pickaxe ready True | shots 3 trigger 0.00 bloom 0.00 | bullets 0 | vm False | Digby hp 100 | terrain queued 0 0.0ms | dt 5ms
+5.005 end done

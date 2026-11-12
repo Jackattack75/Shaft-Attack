@@ -1,0 +1,3 @@
+08:36:26 Viewmodel layer 9; no Guns_BaseColor.png
+08:38:36 Viewmodel layer 9; Pistol ok; Rifle ok; Player.prefab: Loadout (2 guns), PlayerGun, GunViewmodel, CombatHUD, DigbyGunHold; test target: Digby in Dig_Test (saved)
+08:51:26 Viewmodel layer 9; Pistol ok; Rifle ok; Player.prefab: Loadout (2 guns), PlayerGun, GunViewmodel, CombatHUD, DigbyGunHold; test target: Digby (already)

@@ -15,6 +15,10 @@ GameObject:
   - component: {fileID: 4533419979699884228}
   - component: {fileID: 7958708111144632}
   - component: {fileID: 153705331576337}
+  - component: {fileID: 3682115821268239607}
+  - component: {fileID: 8610815266465381827}
+  - component: {fileID: 2291732095549885568}
+  - component: {fileID: 7673178349114536036}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -159,6 +163,7 @@ MonoBehaviour:
   aim: {fileID: 6681151524642387937}
   motor: {fileID: 0}
   look: {fileID: 0}
+  loadout: {fileID: 0}
   pickaxeReach: 3.5
   pickaxeRadius: 1.25
   swingInterval: 0.22
@@ -205,6 +210,88 @@ MonoBehaviour:
   avoidWalls: 1
   cameraRadius: 0.25
   showHint: 1
+--- !u!114 &3682115821268239607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653073586639539983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40a874eedb47843a3a8b68b1b941b07b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.Loadout
+  guns:
+  - {fileID: 11400000, guid: bd481d8c3870d4266a6b4cb102e3bbd0, type: 2}
+  - {fileID: 11400000, guid: e254d3fba96d64c33a8ff2262ba28950, type: 2}
+  startSlot: 0
+  pickaxeDrawTime: 0.15
+--- !u!114 &8610815266465381827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653073586639539983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98e33e6262c7a4a4a91b971e1d5e103b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.PlayerGun
+  aim: {fileID: 0}
+  motor: {fileID: 0}
+  look: {fileID: 0}
+  cameraFeel: {fileID: 0}
+  tracerMaterial: {fileID: 2100000, guid: f7f103f84a5ea44ae9b1ff5feee02bd1, type: 2}
+  flashMaterial: {fileID: 2100000, guid: 341e0a9220b3246a6bb80a77e0f1d332, type: 2}
+  dustMaterial: {fileID: 2100000, guid: b3900dd46e8ca4f898e90ab4cadc8c2f, type: 2}
+  chipMaterial: {fileID: 2100000, guid: 77be2962b8aca4389a3be6dc1f14d6af, type: 2}
+  sparkMaterial: {fileID: 2100000, guid: 68082d335a2ac40198ba5387f8952cef, type: 2}
+--- !u!114 &2291732095549885568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653073586639539983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8ebf40be92554c50a9fb9598dfdd28c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.GunViewmodel
+  armsModel: {fileID: 919132149155446097, guid: b3cb501c97db24b93b796f3bf41347e2, type: 3}
+  armsMaterials:
+  - {fileID: 2100000, guid: a8ffde8139f8d49bdaa75804ed58817d, type: 2}
+  - {fileID: 2100000, guid: 5daef75f89f14430ebd6b1296ba2c1e4, type: 2}
+  fieldOfView: 62
+  scale: 1.125
+  rightShoulder: {x: 0.24, y: -0.52, z: -0.1}
+  leftShoulder: {x: -0.26, y: -0.52, z: -0.1}
+  rightElbow: {x: 0.7, y: -1, z: -0.3}
+  leftElbow: {x: -0.7, y: -1, z: -0.3}
+  sway: 0.004
+  swayTurn: 0.8
+  maxSway: 7
+  bob: 0.009
+  bobRate: 0.16
+  drawDrop: 0.32
+--- !u!114 &7673178349114536036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653073586639539983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e58300fc6574e412cba6d1505401755f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.CombatHUD
+  show: 1
+  hitColor: {r: 1, g: 1, b: 1, a: 0.95}
+  killColor: {r: 1, g: 0.25, b: 0.2, a: 1}
+  numberColor: {r: 1, g: 0.92, b: 0.55, a: 1}
 --- !u!1 &5437482841896375404
 GameObject:
   m_ObjectHideFlags: 0
@@ -550,6 +637,7 @@ GameObject:
   - component: {fileID: 2403675168847339199}
   - component: {fileID: 3159517994559169786}
   - component: {fileID: 3607253540165033571}
+  - component: {fileID: 1476581162913691773}
   m_Layer: 0
   m_Name: DigbyBody
   m_TagString: Untagged
@@ -611,8 +699,14 @@ MonoBehaviour:
   maxLegYaw: 55
   legTurnSpeed: 420
   aimLean: 0.6
-  aimBlendSpeed: 9
+  aimInSpeed: 30
+  aimOutSpeed: 6
   stowAt: 0.78
+  swingCommit: 0.15
+  armBlendIn: 0.05
+  armBlendOut: 0.15
+  gunAimLean: 0.5
+  twoHandTwist: 24
 --- !u!114 &3159517994559169786
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -645,8 +739,30 @@ MonoBehaviour:
   eyeForwardOffset: 0.15
   restEyeAhead: 0.20983636
   lowCameraForward: 0.35
+  lookDownBack: 0.5
+  lookDownFrom: 45
+  lookDownTo: 89
   hideHead: 1
   fullBodyShadow: 1
+--- !u!114 &1476581162913691773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6095289187044218936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bca482e4bb76546979cd9fc45a5b0c4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.DigbyGunHold
+  oneHandOut: 0.62
+  oneHandDown: 0.1
+  oneHandIn: 0.08
+  twoHandOut: 0.48
+  twoHandDown: 0.12
+  twoHandRight: 0.06
+  raiseTime: 0.2
 --- !u!1001 &3171593678900195900
 PrefabInstance:
   m_ObjectHideFlags: 0

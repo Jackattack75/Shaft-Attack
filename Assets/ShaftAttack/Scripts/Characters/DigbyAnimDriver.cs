@@ -20,7 +20,8 @@ namespace ShaftAttack
     ///                        strikes again in time with the next swing. Let go early and he skips the wind-up and
     ///                        hangs the pickaxe back on his back, so one click is one strike.
     ///   Throw                when a bomb is thrown (MinerTools.OnBombThrown)
-    /// While he digs or throws, his upper body leans toward where the player is looking.
+    /// While he digs or throws, his upper body leans toward where the player is looking; with a gun out (DigbyGunHold
+    /// calls SetGunHold) he keeps leaning that way, and turns his chest a bit to the right for a two-handed gun.
     /// Works for anything that moves him: the player (PlayerMotor), a bot, or a networked copy
     /// (then it just watches the transform; call Jump / Swing / Throw yourself). Sits on the prefab root
     /// (DigbyBody on the player). Everything is optional: with an older controller the extra bits are skipped.
@@ -76,6 +77,13 @@ namespace ShaftAttack
         [Tooltip("Seconds for the arm to go back to the running / walking swing when the move is over.")]
         public float armBlendOut = 0.15f;
 
+        [Header("Guns")]
+        [Range(0f, 1f)]
+        [Tooltip("With a gun out his upper body leans this much of the way toward where you look.")]
+        public float gunAimLean = 0.5f;
+        [Tooltip("Degrees his chest turns to the right for a two-handed gun (so his short left arm reaches the front grip).")]
+        public float twoHandTurn = 40f;
+
         /// <summary>Is the dig button still down? The player's MinerTools sets this every frame; bots and
         /// networked copies set it themselves (leave it false and every Swing is a single strike).</summary>
         [System.NonSerialized] public bool digHeld;
@@ -126,6 +134,12 @@ namespace ShaftAttack
         private float throwStart;
         private float rightWeight;      // the arm layers' weights, run from UpdateArms
         private float leftWeight;
+        private int gunHold;            // 0 no gun, 1 one hand, 2 two hands
+        private float gunWeight;
+        private float twistWeight;
+
+        /// <summary>True while the bomb-throw arm move is playing.</summary>
+        public bool ThrowActive { get { return throwing; } }
 
         private void Awake()
         {
@@ -187,6 +201,12 @@ namespace ShaftAttack
                 tools.OnPickaxeSwing -= Swing;
                 tools.OnBombThrown -= Throw;
             }
+        }
+
+        /// <summary>Gun in hand: 0 = none, 1 = one-handed, 2 = two-handed (DigbyGunHold).</summary>
+        public void SetGunHold(int hands)
+        {
+            gunHold = Mathf.Clamp(hands, 0, 2);
         }
 
         /// <summary>Play the take-off. Call this from bots / netcode when they jump.</summary>
@@ -353,14 +373,18 @@ namespace ShaftAttack
         private void LateUpdate()
         {
             if (animator == null || spine == null || chest == null) return;
-            bool aiming = Time.time < aimUntil;
-            aimWeight = Mathf.MoveTowards(aimWeight, aiming ? 1f : 0f, (aiming ? aimInSpeed : aimOutSpeed) * Time.deltaTime);
+            float dt = Time.deltaTime;
+            gunWeight = Mathf.MoveTowards(gunWeight, gunHold != 0 ? 1f : 0f, 6f * dt);
+            twistWeight = Mathf.MoveTowards(twistWeight, gunHold == 2 && !throwing ? 1f : 0f, 5f * dt);
+            bool aiming = Time.time < aimUntil || gunHold != 0;
+            aimWeight = Mathf.MoveTowards(aimWeight, aiming ? 1f : 0f, (aiming ? aimInSpeed : aimOutSpeed) * dt);
             if (aimWeight <= 0f) return;
             Transform frame = transform.parent != null ? transform.parent : transform;
             float pitch = look != null ? Mathf.Clamp(look.Pitch, -50f, 70f) : 0f;
+            float lean = Mathf.Lerp(aimLean, gunAimLean, gunWeight);
             // half on the spine, half on the chest (the chest also carries the spine's half)
-            Quaternion turn = Quaternion.AngleAxis(-0.5f * legYaw * aimWeight, Vector3.up) *
-                              Quaternion.AngleAxis(0.5f * aimLean * pitch * aimWeight, frame.right);
+            Quaternion turn = Quaternion.AngleAxis(-0.5f * legYaw * aimWeight + 0.5f * twoHandTurn * twistWeight, Vector3.up) *
+                              Quaternion.AngleAxis(0.5f * lean * pitch * aimWeight, frame.right);
             spine.rotation = turn * spine.rotation;
             chest.rotation = turn * chest.rotation;
         }

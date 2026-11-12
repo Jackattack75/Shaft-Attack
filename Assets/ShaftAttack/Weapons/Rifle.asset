@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a3de68e9636942fbb1ce427e9608854, type: 3}
+  m_Name: Rifle
+  m_EditorClassIdentifier: Assembly-CSharp::ShaftAttack.GunDefinition
+  displayName: Rifle
+  model: {fileID: 2647141958738199775, guid: 86fd07934c8594853944add20cf17e85, type: 3}
+  hands: 1
+  automatic: 1
+  fireRate: 10
+  damage: 14
+  range: 220
+  spread: 0.3
+  bloomPerShot: 0.22
+  maxBloom: 2.6
+  bloomRecovery: 6
+  moveSpread: 0.5
+  airSpread: 0.8
+  bulletSpeed: 520
+  tracerColor: {r: 1, g: 0.62, b: 0.24, a: 1}
+  tracerWidth: 0.03
+  tracerLength: 6
+  digRadius: 0.45
+  digInset: 0.08
+  aimClimb: 0.32
+  aimWander: 0.14
+  cameraKick: 0.7
+  viewKickBack: 0.035
+  viewKickUp: 3.5
+  viewOffset: {x: 0.17, y: -0.37, z: 0.6}
+  viewEuler: {x: 0, y: -4, z: 0}
+  drawTime: 0.35
+  fingerHold: {x: 0, y: 8}
+  fingerPull: {x: -2, y: -22}
+  triggerTravel: 16
